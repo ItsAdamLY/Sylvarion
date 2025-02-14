@@ -31,6 +31,4 @@ public class SylvDBConnect
     {
         return connection;
     }
-
-
 }

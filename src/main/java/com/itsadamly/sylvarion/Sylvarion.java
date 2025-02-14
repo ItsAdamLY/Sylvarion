@@ -23,6 +23,7 @@ public class Sylvarion extends JavaPlugin
 
         try
         {
+            // to create new table if not exist
             new SylvDBConnect().sqlConnect();
         }
 

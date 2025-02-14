@@ -1,6 +1,7 @@
 package com.itsadamly.sylvarion.commands;
 
 import com.itsadamly.sylvarion.Sylvarion;
+import com.itsadamly.sylvarion.databases.SylvDBConnect;
 import com.itsadamly.sylvarion.databases.bank.BankCard;
 import com.itsadamly.sylvarion.databases.bank.SylvBankDBTasks;
 import org.bukkit.ChatColor;
@@ -10,6 +11,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +22,7 @@ public class SylvCommands implements CommandExecutor
     List<String> perms = allPerms();
     List<String> commandList = commandArgs();
     private static final Sylvarion pluginInstance = Sylvarion.getInstance();
+    private final Connection connection = SylvDBConnect.getSQLConnection();
 
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] args)
@@ -49,7 +52,7 @@ public class SylvCommands implements CommandExecutor
 
             if (args[0].equalsIgnoreCase(commandList.get(3))) // /atm reload
             {
-                pluginInstance.getConfig().options().copyDefaults();
+                pluginInstance.reloadConfig();
             }
 
             else if (args[0].equalsIgnoreCase(commandList.get(0))) // /atm open
@@ -68,7 +71,7 @@ public class SylvCommands implements CommandExecutor
 
                 Player player = (Player) commandSender;
 
-                try
+                try (connection)
                 {
                     boolean isUserExist = new SylvBankDBTasks().isUserInDB(player.getUniqueId().toString());
 
@@ -85,7 +88,7 @@ public class SylvCommands implements CommandExecutor
                     pluginInstance.getServer().getLogger().log(Level.WARNING, error.getMessage());
                 }
 
-                try
+                try (connection)
                 {
                     String cardID = new BankCard().cardID();
                     ItemStack card = new BankCard().createCard(player, cardID);
@@ -136,7 +139,7 @@ public class SylvCommands implements CommandExecutor
                     pluginInstance.getServer().getLogger().log(Level.WARNING, error.getMessage());
                 }
 
-                try
+                try (connection)
                 {
                     new SylvBankDBTasks().deleteUser(player);
                     player.sendMessage(ChatColor.GREEN + "User has successfully been deleted.");
@@ -165,7 +168,7 @@ public class SylvCommands implements CommandExecutor
 
                 Player player = (Player) commandSender;
 
-                try
+                try (connection)
                 {
                     boolean isUserExist = new SylvBankDBTasks().isUserInDB(player.getUniqueId().toString());
 
@@ -182,7 +185,7 @@ public class SylvCommands implements CommandExecutor
                     pluginInstance.getServer().getLogger().log(Level.WARNING, error.getMessage());
                 }
 
-                try
+                try (connection)
                 {
                     String cardID = new SylvBankDBTasks().getCardID(player.getUniqueId().toString());
                     ItemStack card = new BankCard().createCard(player, cardID);
