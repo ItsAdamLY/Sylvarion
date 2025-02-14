@@ -1,0 +1,12 @@
+name: Sylvarion
+version: '${project.version}'
+main: com.itsadamly.sylvarion.Sylvarion
+api-version: 1.17
+
+commands:
+  atm:
+    description: Everything about Sylvarion ATM
+    usage: /<command>
+
+depend:
+  - Vault

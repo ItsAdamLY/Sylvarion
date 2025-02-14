@@ -1,0 +1,12 @@
+dbpath : ""
+# Syntax: C:/.../ServerFiles/SubFolder1/SubFolder2/..., or SubFolder1/SubFolder2/...
+# Syntax:
+dbname : ""
+# Without the extension
+
+db_username: ""
+db_password: ""
+
+db_tablename: ""
+
+initialDeposit: 20.00
