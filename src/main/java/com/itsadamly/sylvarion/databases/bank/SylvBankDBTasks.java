@@ -204,5 +204,7 @@ public class SylvBankDBTasks
         stmt.setInt(2, SrcCoordY);
         stmt.setInt(3, SrcCoordZ);
         stmt.setString(4, tragetPlayteruuid);
+
+        stmt.executeUpdate(); 
     }
 }
