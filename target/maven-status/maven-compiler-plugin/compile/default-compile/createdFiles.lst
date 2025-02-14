@@ -1,0 +1,6 @@
+com\itsadamly\sylvarion\databases\SylvDBConnect.class
+com\itsadamly\sylvarion\Sylvarion.class
+com\itsadamly\sylvarion\commands\SylvCommands.class
+com\itsadamly\sylvarion\databases\bank\SylvBankDBTasks.class
+com\itsadamly\sylvarion\databases\bank\BankCard.class
+com\itsadamly\sylvarion\databases\SylvDBDetails.class
