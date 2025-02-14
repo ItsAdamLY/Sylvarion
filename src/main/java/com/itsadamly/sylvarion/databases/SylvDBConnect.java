@@ -24,7 +24,7 @@ public class SylvDBConnect
         pluginInstance.getServer().getLogger().log(Level.FINEST, "Database " + dbName + " loaded" +
                 " successfully!");
 
-        new SylvBankDBTasks().createTable();
+        new SylvBankDBTasks().createTables();
     }
 
     public static Connection getSQLConnection()
