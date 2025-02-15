@@ -1,12 +1,13 @@
-dbpath : ""
-# Syntax: C:/.../ServerFiles/SubFolder1/SubFolder2/..., or SubFolder1/SubFolder2/...
-# Syntax:
-dbname : ""
-# Without the extension
-
-db_username: ""
-db_password: ""
-
-db_tablename: ""
+database: 
+  path: ""
+  # Syntax: C:/.../ServerFiles/SubFolder1/SubFolder2/..., or SubFolder1/SubFolder2/...
+  # Syntax:
+  name: ""
+  # Without the extension
+  username: ""
+  password: ""
+  tablenames: 
+    user: ""
+    terminal: ""
 
 initialDeposit: 20.00

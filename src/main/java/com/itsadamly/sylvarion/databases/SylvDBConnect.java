@@ -20,7 +20,7 @@ public class SylvDBConnect
         String userName = SylvDBDetails.getDBUserName();
         String password = SylvDBDetails.getDBPassword();
 
-        connection = DriverManager.getConnection("jdbc:mysql://" + URL + "/" + dbName, userName, password);
+        connection = DriverManager.getConnection("jdbc:mysql://" + URL + "/" + dbName + "?autoReconnect=true", userName, password);
         pluginInstance.getServer().getLogger().log(Level.FINEST, "Database " + dbName + " loaded" +
                 " successfully!");
 

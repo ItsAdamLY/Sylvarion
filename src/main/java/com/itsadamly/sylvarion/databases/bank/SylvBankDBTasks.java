@@ -29,7 +29,7 @@ public class SylvBankDBTasks
         );
         userTableStmt.executeUpdate();
 
-        PreparedStatement terminalTableStmt = connectionSQL.prepareStatement(
+        /*PreparedStatement terminalTableStmt = connectionSQL.prepareStatement(
             "CREATE TABLE IF NOT EXISTS " + SylvDBDetails.getDBTerminalTableName() + "(" + 
                 "ID INT NOT NULL AUTO_INCREMENT," + 
                 "CoordX INT NOT NULL," + 
@@ -41,7 +41,7 @@ public class SylvBankDBTasks
                 "PRIMARY KEY (ID)" + 
             ")"
         ); 
-        terminalTableStmt.executeUpdate(); 
+        terminalTableStmt.executeUpdate(); */
     }
 
     public void createProcedures() throws SQLException
@@ -166,6 +166,34 @@ public class SylvBankDBTasks
         ResultSet result = stmt.executeQuery();
 
         return result.next() ? result.getDouble(1) : 0.00;
+    }
+
+    public void setCardBalance(String uuid, String operation, double balance) throws SQLException
+    {
+        PreparedStatement stmt = connectionSQL.prepareStatement(
+            "UPDATE " + SylvDBDetails.getDBUserTableName() + " SET Balance = ? WHERE UUID = ?"
+        );
+
+        double currentBalance = getCardBalance(uuid);
+
+        stmt.setString(2, uuid);
+
+        switch (operation.toLowerCase())
+        {
+            case "add":
+                stmt.setDouble(1, currentBalance + balance);
+                break;
+
+            case "subtract":
+                stmt.setDouble(1, currentBalance - balance);
+                break;
+
+            default:
+                stmt.setDouble(1, balance);
+                break;
+        }
+
+        stmt.executeUpdate();
     }
 
 
