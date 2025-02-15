@@ -9,6 +9,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -18,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 
-public class SylvCommands implements CommandExecutor
+public class SylvCommands implements CommandExecutor, TabExecutor
 {
     List<String> perms = allPerms();
     List<String> commandList = commandArgs();
@@ -314,6 +315,31 @@ public class SylvCommands implements CommandExecutor
         }
 
         return true;
+    }
+
+    @Override
+    public List<String> onTabComplete (CommandSender commandSender, Command command, String s, String[] args)
+    {
+        List<String> toReturn = new ArrayList<>();
+        if (command.getName().equalsIgnoreCase("atm")) {
+            if (args.length == 1) 
+            {
+                toReturn.addAll(commandArgs()); 
+            }
+            else if (args.length == 3)
+            {
+                switch (args[0].toLowerCase())
+                {
+                    case "updatebalance":
+                        toReturn.add("add");
+                        toReturn.add("subtract");
+                        toReturn.add("set");
+                        break; 
+                }
+            }
+        }
+
+        return toReturn;
     }
 
     private List<String> allPerms()
