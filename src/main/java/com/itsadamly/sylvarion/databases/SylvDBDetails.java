@@ -16,27 +16,32 @@ public class SylvDBDetails
 
     public static String getDBPath()
     {
-        return getConfigValue("dbpath");
+        return getConfigValue("database.path");
     }
 
     public static String getDBName()
     {
-        return getConfigValue("dbname");
+        return getConfigValue("database.name");
     }
 
     public static String getDBUserName()
     {
-        return getConfigValue("db_username");
+        return getConfigValue("database.username");
     }
 
     public static String getDBPassword()
     {
-        return getConfigValue("db_password");
+        return getConfigValue("database.password");
     }
 
-    public static String getDBTableName()
+    public static String getDBUserTableName()
     {
-        return getConfigValue("db_tablename");
+        return getConfigValue("database.tablenames.user");
+    }
+
+    public static String getDBTerminalTableName ()
+    {
+        return getConfigValue("database.tablenames.terminal"); 
     }
 
     public static double getDepositValue()

@@ -15,10 +15,10 @@ public class SylvBankDBTasks
     private final Sylvarion pluginInstance = Sylvarion.getInstance();
     private final Connection connectionSQL = SylvDBConnect.getSQLConnection();
 
-    public void createTable() throws SQLException
+    public void createTables() throws SQLException
     {
-        PreparedStatement stmt = connectionSQL.prepareStatement (
-                "CREATE TABLE IF NOT EXISTS " + SylvDBDetails.getDBTableName() + " (" +
+        PreparedStatement userTableStmt = connectionSQL.prepareStatement (
+                "CREATE TABLE IF NOT EXISTS " + SylvDBDetails.getDBUserTableName() + " (" +
                         "ID INT NOT NULL AUTO_INCREMENT," +
                         "Name VARCHAR(100)," +
                         "UUID VARCHAR(100)," +
@@ -27,14 +27,90 @@ public class SylvBankDBTasks
                         "PRIMARY KEY (ID)" +
                 ")"
         );
-        stmt.executeUpdate();
+        userTableStmt.executeUpdate();
+
+        PreparedStatement terminalTableStmt = connectionSQL.prepareStatement(
+            "CREATE TABLE IF NOT EXISTS " + SylvDBDetails.getDBTerminalTableName() + "(" + 
+                "ID INT NOT NULL AUTO_INCREMENT," + 
+                "CoordX INT NOT NULL," + 
+                "CoordY INT NOT NULL," + 
+                "CoordZ INT NOT NULL," + 
+                "IsPasswordProtected BOOLEAN NOT NULL DEFAULT FALSE, " + 
+                "Password VARCHAR(32)," + 
+                "StoredBalance DECIMAL(10, 2) NOT NULL DEFAULT 0.0," + 
+                "PRIMARY KEY (ID)" + 
+            ")"
+        ); 
+        terminalTableStmt.executeUpdate(); 
+    }
+
+    public void createProcedures() throws SQLException
+    {
+        PreparedStatement payUserStmt = connectionSQL.prepareStatement(
+            "CREATE PROCEDURE IF NOT EXISTS PayPlayer (" + 
+                "IN SrcPlayerUUID VARCHAR(100), " + 
+                "IN TargetPlayerUUID VARCHAR(100)," + 
+                "IN Amount DECIMAL(10, 2)," + 
+            ") BEGIN " + 
+                "UPDATE " + SylvDBDetails.getDBUserTableName() +  
+                    "SET Balance = Balance + Amount" + 
+                    "WHERE UUID = TargetPlayerUUID;" + 
+                "UPDATE " + SylvDBDetails.getDBUserTableName() + 
+                    "SET Balance = Balance - Amount" + 
+                    "WHERE UUID = SrcPlayerUUID; " + 
+            "END; "
+        ); 
+        payUserStmt.executeUpdate(); 
+
+        PreparedStatement payTerminalStatement = connectionSQL.prepareStatement(
+            "CREATE PROCEDURE IF NOT EXISTS PayTerminal (" + 
+                "IN SrcPlayerUUID VARCHAR(100), " + 
+                "IN TargetCoordX INT," +
+                "IN TargetCoordY INT," +
+                "IN TargetCoordZ INT," + 
+                "IN Amount DECIMAL(10, 2)," + 
+            ") BEGIN " + 
+                "UPDATE " + SylvDBDetails.getDBTerminalTableName() +  
+                    "SET StoredBalance = StoredBalance + Amount" + 
+                    "WHERE CoordX = TargetCoordX AND" +
+                        "CoordY = TargetCoordY AND" + 
+                        "CoordZ = TargetCoordZ; " +
+                "UPDATE " + SylvDBDetails.getDBUserTableName() + 
+                    "SET Balance = Balance - Amount" + 
+                    "WHERE UUID = SrcPlayerUUID; " + 
+            "END; "
+        ); 
+        payTerminalStatement.executeUpdate(); 
+        
+        PreparedStatement transferTerminalBalStatement = connectionSQL.prepareStatement(
+            "CREATE PROCEDURE IF NOT EXISTS TransferTerminalBal (" + 
+                "IN SrcCoordX INT,  " + 
+                "IN SrcCoordY INT,  " + 
+                "IN SrcCoordZ INT,  " + 
+                "IN TargetPlayerUUID VARCHAR(100)  " + 
+            ") BEGIN   " + 
+                "UPDATE " + SylvDBDetails.getDBUserTableName() + 
+                "set `Balance` = `Balance` + (" + 
+                    "SELECT StoredBalance from " + SylvDBDetails.getDBTerminalTableName() + 
+                    "WHERE `CoordX` = SrcCoordX AND" + 
+                        "`CoordY` = SrcCoordY AND" + 
+                        "`CoordZ` = SrcCoordZ" + 
+                    "); " + 
+                "UPDATE " + SylvDBDetails.getDBTerminalTableName() + 
+                "SET StoredBalance = 0  " + 
+                    "WHERE CoordX = SrcCoordX AND " + 
+                    "CoordY = SrcCoordY AND  " + 
+                    "CoordZ = SrcCoordZ;" + 
+            "END;"
+        ); 
+        transferTerminalBalStatement.executeUpdate(); 
     }
 
     public void createUser(Player player, String cardCode) throws SQLException
     {
         PreparedStatement stmt = connectionSQL.prepareStatement(
-                "INSERT INTO " + SylvDBDetails.getDBTableName() + " (Name, UUID, CardID, Balance) " +
-                        "VALUES (?, ?, ?, ?)"
+            "INSERT INTO " + SylvDBDetails.getDBUserTableName() + " (Name, UUID, CardID, Balance) " +
+                "VALUES (?, ?, ?, ?)"
         );
 
         // replace ? with following args by index
@@ -48,7 +124,7 @@ public class SylvBankDBTasks
     public void deleteUser(Player player) throws SQLException
     {
         PreparedStatement stmt = connectionSQL.prepareStatement(
-                "DELETE FROM " + SylvDBDetails.getDBTableName() + " WHERE UUID = ?"
+            "DELETE FROM " + SylvDBDetails.getDBUserTableName() + " WHERE UUID = ?"
         );
         stmt.setString(1, player.getUniqueId().toString());
         stmt.executeUpdate();
@@ -57,7 +133,7 @@ public class SylvBankDBTasks
     public boolean isUserInDB(String uuid) throws SQLException
     {
         PreparedStatement stmt = connectionSQL.prepareStatement(
-            "SELECT UUID FROM " + SylvDBDetails.getDBTableName() + " WHERE UUID = ?"
+            "SELECT UUID FROM " + SylvDBDetails.getDBUserTableName() + " WHERE UUID = ?"
         );
 
         stmt.setString(1, uuid);
@@ -69,7 +145,7 @@ public class SylvBankDBTasks
     public String getCardID(String uuid) throws SQLException
     {
         PreparedStatement stmt = connectionSQL.prepareStatement(
-                "SELECT CardID FROM " + SylvDBDetails.getDBTableName() + " WHERE UUID = ?"
+            "SELECT CardID FROM " + SylvDBDetails.getDBUserTableName() + " WHERE UUID = ?"
         );
 
         stmt.setString(1, uuid);
@@ -83,7 +159,7 @@ public class SylvBankDBTasks
     public double getCardBalance(String uuid) throws SQLException
     {
         PreparedStatement stmt = connectionSQL.prepareStatement(
-                "SELECT Balance FROM " + SylvDBDetails.getDBTableName() + " WHERE UUID = ?"
+            "SELECT Balance FROM " + SylvDBDetails.getDBUserTableName() + " WHERE UUID = ?"
         );
 
         stmt.setString(1, uuid);
@@ -92,4 +168,43 @@ public class SylvBankDBTasks
         return result.next() ? result.getDouble(1) : 0.00;
     }
 
+
+    public void payUser (String srcPlayeruuid, String targetPlayeruuid, float amount) throws SQLException
+    {
+        PreparedStatement stmt = connectionSQL.prepareStatement(
+            "CALL `PayPlayer` (?, ?, ?);"
+        ); 
+        stmt.setString(1, srcPlayeruuid);
+        stmt.setString(2, targetPlayeruuid);
+        stmt.setDouble(3, amount);
+
+        stmt.executeUpdate(); 
+    }
+
+    public void payTerminal (String srcPlayeruuid, int targetCoordX, int targetCoordY, int targetCoordZ, float amount) throws SQLException
+    {
+        PreparedStatement stmt = connectionSQL.prepareStatement(
+            "CALL `PayTerminal` (?, ?, ?, ?, ?);"
+        ); 
+        stmt.setString(1, srcPlayeruuid);
+        stmt.setInt(2, targetCoordX);
+        stmt.setInt(3, targetCoordY);
+        stmt.setInt(4, targetCoordZ);
+        stmt.setDouble(5, amount);
+
+        stmt.executeUpdate(); 
+    }
+
+    public void TransferTerminalBal (int SrcCoordX, int SrcCoordY, int SrcCoordZ, String tragetPlayteruuid) throws SQLException
+    {
+        PreparedStatement stmt = connectionSQL.prepareStatement(
+            "CALL `TransferTerminalBal` (?, ?, ?, ?);"
+        ); 
+        stmt.setInt(1, SrcCoordX);
+        stmt.setInt(2, SrcCoordY);
+        stmt.setInt(3, SrcCoordZ);
+        stmt.setString(4, tragetPlayteruuid);
+
+        stmt.executeUpdate(); 
+    }
 }
