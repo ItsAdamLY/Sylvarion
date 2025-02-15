@@ -16,6 +16,7 @@ import org.bukkit.inventory.ItemStack;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -322,20 +323,25 @@ public class SylvCommands implements CommandExecutor, TabExecutor
     {
         List<String> toReturn = new ArrayList<>();
         if (command.getName().equalsIgnoreCase("atm")) {
-            if (args.length == 1) 
+            switch (args.length)
             {
-                toReturn.addAll(commandArgs()); 
-            }
-            else if (args.length == 3)
-            {
-                switch (args[0].toLowerCase())
-                {
-                    case "updatebalance":
+                case 1:
+                    toReturn.addAll(commandArgs());
+                    break;
+                case 2:
+                    if (!args[0].equalsIgnoreCase("reload")) {
+                        for (Player p: Bukkit.getOnlinePlayers()) {
+                            toReturn.add(p.getName());
+                        }
+                    };
+                    break;
+                case 3:
+                    if (args[0].equalsIgnoreCase("updatebalance")) {
                         toReturn.add("add");
                         toReturn.add("subtract");
                         toReturn.add("set");
-                        break; 
-                }
+                    };
+                    break;
             }
         }
 
