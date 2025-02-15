@@ -31,6 +31,10 @@ public class Sylvarion extends JavaPlugin
         {
             getServer().getLogger().log(Level.SEVERE, "Cannot connect to database. Make sure the DB details are correct.");
             getServer().getLogger().log(Level.WARNING, error.getMessage());
+
+            for (StackTraceElement element : error.getStackTrace())
+                getServer().getLogger().log(Level.WARNING, element.toString());
+
             getServer().getPluginManager().disablePlugin(this);
         }
     }
