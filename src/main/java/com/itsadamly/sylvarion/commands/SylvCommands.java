@@ -9,16 +9,18 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 
-public class SylvCommands implements CommandExecutor
+public class SylvCommands implements CommandExecutor, TabExecutor
 {
     List<String> perms = allPerms();
     List<String> commandList = commandArgs();
@@ -314,6 +316,36 @@ public class SylvCommands implements CommandExecutor
         }
 
         return true;
+    }
+
+    @Override
+    public List<String> onTabComplete (CommandSender commandSender, Command command, String s, String[] args)
+    {
+        List<String> toReturn = new ArrayList<>();
+        if (command.getName().equalsIgnoreCase("atm")) {
+            switch (args.length)
+            {
+                case 1:
+                    toReturn.addAll(commandArgs());
+                    break;
+                case 2:
+                    if (!args[0].equalsIgnoreCase("reload")) {
+                        for (Player p: Bukkit.getOnlinePlayers()) {
+                            toReturn.add(p.getName());
+                        }
+                    };
+                    break;
+                case 3:
+                    if (args[0].equalsIgnoreCase("updatebalance")) {
+                        toReturn.add("add");
+                        toReturn.add("subtract");
+                        toReturn.add("set");
+                    };
+                    break;
+            }
+        }
+
+        return toReturn;
     }
 
     private List<String> allPerms()
