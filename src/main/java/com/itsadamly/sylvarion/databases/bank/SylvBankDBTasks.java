@@ -9,6 +9,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SylvBankDBTasks
 {
@@ -121,34 +123,51 @@ public class SylvBankDBTasks
         stmt.executeUpdate();
     }
 
-    public void deleteUser(Player player) throws SQLException
+    public void deleteUser(String playerName) throws SQLException
     {
         PreparedStatement stmt = connectionSQL.prepareStatement(
-            "DELETE FROM " + SylvDBDetails.getDBUserTableName() + " WHERE UUID = ?"
+            "DELETE FROM " + SylvDBDetails.getDBUserTableName() + " WHERE Name = ?"
         );
-        stmt.setString(1, player.getUniqueId().toString());
+        stmt.setString(1, playerName);
         stmt.executeUpdate();
     }
 
-    public boolean isUserInDB(String uuid) throws SQLException
+    public boolean isUserInDB(String playerName) throws SQLException
     {
         PreparedStatement stmt = connectionSQL.prepareStatement(
-            "SELECT UUID FROM " + SylvDBDetails.getDBUserTableName() + " WHERE UUID = ?"
+            "SELECT UUID FROM " + SylvDBDetails.getDBUserTableName() + " WHERE Name = ?"
         );
 
-        stmt.setString(1, uuid);
+        stmt.setString(1, playerName);
         ResultSet result = stmt.executeQuery();
 
         return result.next();
     }
 
-    public String getCardID(String uuid) throws SQLException
+    public List<String> getAllPlayers() throws SQLException
     {
         PreparedStatement stmt = connectionSQL.prepareStatement(
-            "SELECT CardID FROM " + SylvDBDetails.getDBUserTableName() + " WHERE UUID = ?"
+            "SELECT Name FROM " + SylvDBDetails.getDBUserTableName()
         );
 
-        stmt.setString(1, uuid);
+        ResultSet result = stmt.executeQuery();
+        List<String> players = new ArrayList<>();
+
+        while (result.next()) // loop for each until there is no entry left
+        {
+            players.add(result.getString(1));
+        }
+
+        return players;
+    }
+
+    public String getCardID(String playerName) throws SQLException
+    {
+        PreparedStatement stmt = connectionSQL.prepareStatement(
+            "SELECT CardID FROM " + SylvDBDetails.getDBUserTableName() + " WHERE Name = ?"
+        );
+
+        stmt.setString(1, playerName);
         ResultSet result = stmt.executeQuery();
 
         return result.next() ? result.getString(1) : null;
@@ -156,46 +175,41 @@ public class SylvBankDBTasks
         // ─ Used to move the cursor to the next row, and check if the data exists & matches
     }
 
-    public double getCardBalance(String uuid) throws SQLException
+    public double getCardBalance(String playerName) throws SQLException
     {
         PreparedStatement stmt = connectionSQL.prepareStatement(
-            "SELECT Balance FROM " + SylvDBDetails.getDBUserTableName() + " WHERE UUID = ?"
+            "SELECT Balance FROM " + SylvDBDetails.getDBUserTableName() + " WHERE Name = ?"
         );
 
-        stmt.setString(1, uuid);
+        stmt.setString(1, playerName);
         ResultSet result = stmt.executeQuery();
 
         return result.next() ? result.getDouble(1) : 0.00;
     }
 
-    public void setCardBalance(String uuid, String operation, double balance) throws SQLException
+    public void setCardBalance(String operation, double balance) throws SQLException
     {
         PreparedStatement stmt = connectionSQL.prepareStatement(
-            "UPDATE " + SylvDBDetails.getDBUserTableName() + " SET Balance = ? WHERE UUID = ?"
+                "UPDATE " + SylvDBDetails.getDBUserTableName() + " SET Balance = ? WHERE Name = ?"
         );
 
-        double currentBalance = getCardBalance(uuid);
-
-        stmt.setString(2, uuid);
-
-        switch (operation.toLowerCase())
+        for (String players : getAllPlayers())
         {
-            case "add":
-                stmt.setDouble(1, currentBalance + balance);
-                break;
-
-            case "subtract":
-                stmt.setDouble(1, currentBalance - balance);
-                break;
-
-            default:
-                stmt.setDouble(1, balance);
-                break;
+            balanceOperation(operation, balance, stmt, players);
+            stmt.executeUpdate();
         }
+    }
+
+    public void setCardBalance(String playerName, String operation, double balance) throws SQLException
+    {
+        PreparedStatement stmt = connectionSQL.prepareStatement(
+            "UPDATE " + SylvDBDetails.getDBUserTableName() + " SET Balance = ? WHERE Name = ?"
+        );
+
+        balanceOperation(operation, balance, stmt, playerName);
 
         stmt.executeUpdate();
     }
-
 
     public void payUser (String srcPlayeruuid, String targetPlayeruuid, float amount) throws SQLException
     {
@@ -223,7 +237,7 @@ public class SylvBankDBTasks
         stmt.executeUpdate(); 
     }
 
-    public void TransferTerminalBal (int SrcCoordX, int SrcCoordY, int SrcCoordZ, String tragetPlayteruuid) throws SQLException
+    public void transferTerminalBal (int SrcCoordX, int SrcCoordY, int SrcCoordZ, String tragetPlayteruuid) throws SQLException
     {
         PreparedStatement stmt = connectionSQL.prepareStatement(
             "CALL `TransferTerminalBal` (?, ?, ?, ?);"
@@ -234,5 +248,27 @@ public class SylvBankDBTasks
         stmt.setString(4, tragetPlayteruuid);
 
         stmt.executeUpdate(); 
+    }
+
+    private void balanceOperation(String operation, double balance, PreparedStatement stmt, String players) throws SQLException
+    {
+        double currentBalance = getCardBalance(players);
+
+        stmt.setString(2, players);
+
+        switch (operation.toLowerCase())
+        {
+            case "add":
+                stmt.setDouble(1, currentBalance + balance);
+                break;
+
+            case "subtract":
+                stmt.setDouble(1, currentBalance - balance);
+                break;
+
+            default:
+                stmt.setDouble(1, balance);
+                break;
+        }
     }
 }

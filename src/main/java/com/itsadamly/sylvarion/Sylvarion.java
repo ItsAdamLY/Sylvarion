@@ -1,6 +1,7 @@
 package com.itsadamly.sylvarion;
 
-import com.itsadamly.sylvarion.commands.SylvCommands;
+import com.itsadamly.sylvarion.commands.SylvATMCommands;
+import com.itsadamly.sylvarion.commands.tabcomplete.SylvATMTabComplete;
 import com.itsadamly.sylvarion.databases.SylvDBConnect;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -16,7 +17,8 @@ public class Sylvarion extends JavaPlugin
     public void onEnable()
     {
         pluginInstance = this;
-        getCommand("atm").setExecutor(new SylvCommands());
+        getCommand("atm").setExecutor(new SylvATMCommands());
+        getCommand("atm").setTabCompleter(new SylvATMTabComplete());
 
         getConfig().options().copyDefaults(true);
         saveDefaultConfig();
