@@ -2,8 +2,9 @@ package com.itsadamly.sylvarion.commands;
 
 import com.itsadamly.sylvarion.Sylvarion;
 import com.itsadamly.sylvarion.databases.SylvDBConnect;
-import com.itsadamly.sylvarion.databases.bank.BankCard;
+import com.itsadamly.sylvarion.databases.bank.SylvBankCard;
 import com.itsadamly.sylvarion.databases.bank.SylvBankDBTasks;
+import com.itsadamly.sylvarion.events.ATM.SylvATMOperations;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -55,113 +56,43 @@ public class SylvATMCommands implements CommandExecutor
 
             else if (args[0].equalsIgnoreCase("open")) // /atm open
             {
-                try (connection)
+                Player player;
+
+                if (args.length > 1)
                 {
-                    boolean isUserExist;
-                    
-                    if (args.length == 1)
+                    try
                     {
-                        if (!(commandSender instanceof Player))
-                        {
-                            commandSender.sendMessage(ChatColor.RED + "Only players are allowed to run this command.");
-                            return true;
-                        }
-
-                        Player player = (Player) commandSender;
-                        isUserExist = new SylvBankDBTasks().isUserInDB(player.getName());
+                        player = Bukkit.getPlayerExact(args[1]);
                     }
-                    
-                    else
-                        isUserExist = new SylvBankDBTasks().isUserInDB
-                                (Bukkit.getPlayerExact(args[1]).getName());
-
-                    if (isUserExist)
+                    catch (NullPointerException error)
                     {
-                        commandSender.sendMessage(ChatColor.RED + "This person already has an account opened.");
+                        commandSender.sendMessage(ChatColor.RED + "Player not found. Is the player online?");
                         return true;
                     }
                 }
-                catch (SQLException error)
-                {
-                    commandSender.sendMessage(ChatColor.RED + "An error occurred. Check console for details.");
-                    pluginInstance.getServer().getLogger().log(Level.WARNING, error.getMessage());
-                }
-                catch (NullPointerException error)
-                {
-                    commandSender.sendMessage(ChatColor.RED + "Player is not online.");
-                    return true;
-                }
 
-                Player player;
-
-                if (args.length == 1)
+                else
                 {
-                    assert commandSender instanceof Player;
                     player = (Player) commandSender;
                 }
 
-                else
-                    player = Bukkit.getPlayerExact(args[1]);
-
-                try (connection)
+                try
                 {
-                    String cardID = new BankCard().cardID();
-                    assert player != null;
-                    ItemStack card = new BankCard().createCard(player, cardID);
-
-                    new SylvBankDBTasks().createUser(player, cardID);
-
-                    if (args.length == 1)
-                        player.sendMessage(ChatColor.GREEN + "Your account has been opened.");
-
-                    else
-                    {
-                        commandSender.sendMessage(ChatColor.GREEN + "Account for this player has been opened.");
-                        player.sendMessage(ChatColor.GREEN + "Your account has been opened by " + commandSender.getName() + '.');
-                    }
-
-                    player.getInventory().addItem(card);
+                    new SylvATMOperations(connection).openAccount(commandSender, player);
                 }
                 catch (SQLException error)
                 {
-                    player.sendMessage(ChatColor.RED + "Cannot create user. Check console for details.");
+                    commandSender.sendMessage(ChatColor.RED + "Cannot create user. Check console for details.");
                     pluginInstance.getServer().getLogger().log(Level.WARNING, error.getMessage());
                 }
+
+                return true;
             }
 
             else if (args[0].equalsIgnoreCase("close")) // /atm close
             {
-                String username = getUsername(commandSender, args);
-                if (username == null) return true; // Console
-
-                try (connection)
-                {
-                    boolean isUserExist = new SylvBankDBTasks().isUserInDB(args[1]);
-
-                    if (!isUserExist)
-                    {
-                        if (commandSender.getName().equalsIgnoreCase(username))
-                            commandSender.sendMessage(ChatColor.RED + "You haven't created any account.");
-
-                        else
-                            commandSender.sendMessage(ChatColor.RED + "This player has not created any account.");
-
-                        return true;
-                    }
-
-                    new SylvBankDBTasks().deleteUser(username);
-
-                    if (commandSender.getName().equalsIgnoreCase(username))
-                        commandSender.sendMessage(ChatColor.GREEN + "Your account has successfully been deleted.");
-
-                    else
-                        commandSender.sendMessage(ChatColor.GREEN + "Player's account has successfully been deleted.");
-                }
-                catch (SQLException error)
-                {
-                    commandSender.sendMessage(ChatColor.RED + "Cannot delete user. Check console for details.");
-                    pluginInstance.getServer().getLogger().log(Level.WARNING, error.getMessage());
-                }
+                new SylvATMOperations(connection).closeAccount(commandSender, args[1]);
+                return true;
             }
 
             else if (args[0].equalsIgnoreCase("getCard")) // /atm getCard
@@ -191,7 +122,7 @@ public class SylvATMCommands implements CommandExecutor
                     }
 
                     String cardID = new SylvBankDBTasks().getCardID(player.getName());
-                    ItemStack card = new BankCard().createCard(player, cardID);
+                    ItemStack card = new SylvBankCard().createCard(player.getName(), cardID);
 
                     player.getInventory().setItemInMainHand(card);
                     player.sendMessage(ChatColor.GREEN + "You have reobtained your card.");
@@ -205,7 +136,7 @@ public class SylvATMCommands implements CommandExecutor
 
             else if (args[0].equalsIgnoreCase("checkBalance")) // /atm checkBalance (name)
             {
-                String username = getUsername(commandSender, args);
+                String username = new SylvATMOperations(connection).getUsername(commandSender, args);
                 if (username == null) return true; // Console
 
                 try (connection)
@@ -219,6 +150,7 @@ public class SylvATMCommands implements CommandExecutor
 
                         else
                             commandSender.sendMessage(ChatColor.RED + "This player has not created any account.");
+
                         return true;
                     }
 
@@ -233,7 +165,8 @@ public class SylvATMCommands implements CommandExecutor
             }
 
             // /atm updateBalance
-            else if (args[0].equalsIgnoreCase("updateBalance") || args[0].equalsIgnoreCase("updatemoney"))
+            else if (args[0].equalsIgnoreCase("updateBalance") ||
+                    args[0].equalsIgnoreCase("updatemoney"))
             {
                 if (args.length < 4)
                 {
@@ -301,8 +234,9 @@ public class SylvATMCommands implements CommandExecutor
                 }
             }
 
-            else if (args[0].equalsIgnoreCase("updateBalanceAll") || args[0].equalsIgnoreCase("updateAll")
-            || args[0].equalsIgnoreCase("updateMoneyAll"))
+            else if (args[0].equalsIgnoreCase("updateBalanceAll") ||
+                    args[0].equalsIgnoreCase("updateAll") ||
+                    args[0].equalsIgnoreCase("updateMoneyAll"))
             {
                 if (args.length < 3)
                 {
@@ -370,31 +304,6 @@ public class SylvATMCommands implements CommandExecutor
         perms = new ArrayList<>();
         perms.add("bankcommand");
         return perms;
-    }
-
-    private String getUsername(CommandSender commandSender, String[] args)
-    {
-        String username = null;
-
-        switch (args.length)
-        {
-            case 1:
-                if (!(commandSender instanceof Player))
-                {
-                    commandSender.sendMessage(ChatColor.RED + "Only players are allowed to run this command.");
-                    return null;
-                }
-
-                Player player = (Player) commandSender;
-                username = player.getName();
-                break;
-
-            case 2:
-                username = args[1];
-                break;
-        }
-
-        return username;
     }
 
     protected List<String> commandArgs()
