@@ -1,4 +1,6 @@
-database: 
+database:
+  driver: ""
+  # Only the name of the driver (MySQL, MariaDB, SQLite, ...)
   path: ""
   # Syntax: C:/.../ServerFiles/SubFolder1/SubFolder2/..., or SubFolder1/SubFolder2/...
   # Syntax:

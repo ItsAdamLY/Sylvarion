@@ -3,6 +3,8 @@ package com.itsadamly.sylvarion.events.ATM;
 import com.itsadamly.sylvarion.Sylvarion;
 import com.itsadamly.sylvarion.databases.bank.SylvBankCard;
 import com.itsadamly.sylvarion.databases.bank.SylvBankDBTasks;
+import net.milkbowl.vault.economy.Economy;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -10,6 +12,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Objects;
 import java.util.logging.Level;
 
 public class SylvATMOperations
@@ -71,10 +74,10 @@ public class SylvATMOperations
             if (!isUserExist)
             {
                 if (commandSender.getName().equalsIgnoreCase(targetName))
-                    commandSender.sendMessage(ChatColor.RED + "You haven't created any account.");
+                    commandSender.sendMessage(ChatColor.RED + "You don't have any account.");
 
                 else
-                    commandSender.sendMessage(ChatColor.RED + "This player has not created any account.");
+                    commandSender.sendMessage(ChatColor.RED + "This player does not have any account.");
 
                 return;
             }
@@ -85,11 +88,56 @@ public class SylvATMOperations
                 commandSender.sendMessage(ChatColor.GREEN + "Your account has successfully been deleted.");
 
             else
+            {
                 commandSender.sendMessage(ChatColor.GREEN + "Player's account has successfully been deleted.");
+
+                if (Bukkit.getPlayerExact(targetName) != null)
+                    Objects.requireNonNull(Bukkit.getPlayerExact(targetName)).sendMessage
+                            (ChatColor.GOLD + "Your bank account has been closed by " + commandSender.getName() + '.');
+            }
+
         }
         catch (SQLException error)
         {
             commandSender.sendMessage(ChatColor.RED + "Cannot delete user. Check console for details.");
+            pluginInstance.getServer().getLogger().log(Level.WARNING, error.getMessage());
+        }
+    }
+    
+    public void deposit(CommandSender commandSender, String targetName, double amount)
+    {
+        try (connection)
+        {
+            boolean isUserExist = new SylvBankDBTasks().isUserInDB(targetName);
+
+            if (!isUserExist)
+            {
+                if (targetName.equalsIgnoreCase(commandSender.getName()))
+                    commandSender.sendMessage(ChatColor.RED + "You don't have any account.");
+
+                else
+                    commandSender.sendMessage(ChatColor.RED + "This player does not have any account.");
+
+                return;
+            }
+
+            Economy economy = Sylvarion.getEconomy();
+
+            if (economy.getBalance(Bukkit.getOfflinePlayer(targetName)) < amount)
+            {
+                commandSender.sendMessage(ChatColor.RED + "Insufficient money.");
+                return;
+            }
+
+            economy.withdrawPlayer(Bukkit.getOfflinePlayer(targetName), amount);
+
+            new SylvBankDBTasks().setCardBalance(targetName, "add", amount);
+
+            commandSender.sendMessage(ChatColor.GREEN + "You have successfully deposited " + amount + " into your account.");
+        }
+        catch (SQLException error)
+        {
+            commandSender.sendMessage(ChatColor.RED + "Cannot deposit into user's account. Check console for details.");
             pluginInstance.getServer().getLogger().log(Level.WARNING, error.getMessage());
         }
     }

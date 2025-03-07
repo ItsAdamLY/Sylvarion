@@ -30,7 +30,7 @@ public class InteractATM implements Listener
                                     .equalsIgnoreCase("[ATM]"))
             {
                 event.setCancelled(true);
-                new SylvATMGUI(event.getPlayer());
+                new SylvATMGUI(event.getPlayer()).openGUI();
             }
         }
     }
@@ -58,13 +58,15 @@ public class InteractATM implements Listener
                     }
                     break;
 
+                case 4:
+                    //  Receive card details
+
+
                 // Close Account
                 case 7:
                     new SylvATMOperations(connection).closeAccount(event.getWhoClicked(), event.getWhoClicked().getName());
                     event.getView().close();
                     break;
-
-                default:
             }
         }
     }

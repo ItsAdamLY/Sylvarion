@@ -14,6 +14,11 @@ public class SylvDBDetails
         return pluginInstance.getConfig().getString(key);
     }
 
+    public static String getDriver()
+    {
+        return getConfigValue("database.driver");
+    }
+
     public static String getDBPath()
     {
         return getConfigValue("database.path");

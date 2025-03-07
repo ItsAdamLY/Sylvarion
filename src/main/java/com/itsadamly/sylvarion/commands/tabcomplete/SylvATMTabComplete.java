@@ -36,7 +36,8 @@ public class SylvATMTabComplete extends SylvATMCommands implements TabExecutor
                     break;
 
                 case 3:
-                    if (args[0].equalsIgnoreCase(commandArgs().get(3)))
+                    if (args[0].equalsIgnoreCase("updateBalance") ||
+                        args[0].equalsIgnoreCase("updatemoney"))
                     {
                         argsList.add("add");
                         argsList.add("subtract");

@@ -19,8 +19,8 @@ public class SylvBankDBTasks
 
     public void createTables() throws SQLException
     {
-        PreparedStatement userTableStmt = connectionSQL.prepareStatement (
-                "CREATE TABLE IF NOT EXISTS " + SylvDBDetails.getDBUserTableName() + " (" +
+        PreparedStatement userTableStmt = connectionSQL.prepareStatement(
+                "CREATE TABLE IF NOT EXISTS " + SylvDBDetails.getDBUserTableName() + "(" +
                         "ID INT NOT NULL AUTO_INCREMENT," +
                         "Name VARCHAR(100)," +
                         "UUID VARCHAR(100)," +
@@ -272,3 +272,6 @@ public class SylvBankDBTasks
         }
     }
 }
+
+// Authentication for payments/transfers - IceKing
+//

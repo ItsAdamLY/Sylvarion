@@ -2,7 +2,6 @@ package com.itsadamly.sylvarion.databases.bank;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -10,17 +9,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class BankCard
+public class SylvBankCard
 {
-
-    public ItemStack createCard(Player player, String cardCode)
+    public ItemStack createCard(String playerName, String cardCode)
     {
         ItemStack card = new ItemStack(Material.NAME_TAG);
         ItemMeta cardMeta = card.getItemMeta();
 
         List<String> cardDetails = new ArrayList<>();
 
-        cardMeta.setDisplayName(player.getName() + "'s Bank Card");
+        assert cardMeta != null;
+        cardMeta.setDisplayName(playerName + "'s Bank Card");
 
         cardDetails.add(ChatColor.GRAY + "§o" + cardCode);
 
