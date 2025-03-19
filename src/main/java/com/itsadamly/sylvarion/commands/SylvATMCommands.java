@@ -101,17 +101,25 @@ public class SylvATMCommands implements CommandExecutor
 
         else if (args[0].equalsIgnoreCase("close")) // /atm close
         {
+            String username = new SylvATMOperations(connection).getUsername(commandSender, args);
+            if (username == null) return true; // Console
+
             new SylvATMOperations(connection).closeAccount(commandSender, args[1]);
             return true;
         }
 
         else if (args[0].equalsIgnoreCase("getCard")) // /atm getCard
         {
-            String username = new SylvATMOperations(connection).getUsername(commandSender, args);
-            if (username == null) return true; // Console
+            if (!(commandSender instanceof Player))
+            {
+                commandSender.sendMessage(ChatColor.RED + "You are a console. Shut up.");
+                return true;
+            }
 
             try (connection)
             {
+                String username = new SylvATMOperations(connection).getUsername(commandSender, args);
+
                 boolean isUserExist = new SylvBankDBTasks().isUserInDB(username);
 
                 if (!isUserExist)

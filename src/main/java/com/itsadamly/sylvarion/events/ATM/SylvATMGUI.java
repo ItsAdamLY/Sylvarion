@@ -16,15 +16,13 @@ public class SylvATMGUI
     private final Inventory atmGUI;
     private final Player player;
 
-    public SylvATMGUI(Player player)
+    public SylvATMGUI(String title, Player player)
     {
-        this.atmGUI = Bukkit.createInventory(null, 9, ChatColor.DARK_GREEN + "ATM");
+        this.atmGUI = Bukkit.createInventory(null, 9, ChatColor.DARK_GREEN + title);
         this.player = player;
-
-        atmMenu();
     }
 
-    private ItemStack atmMenuElement(Material material, String itemName, ArrayList<String> description)
+    private static ItemStack atmMenuElement(Material material, String itemName, ArrayList<String> description)
     {
         ItemStack elementItem = new ItemStack(material);
         ItemMeta elementMeta = elementItem.getItemMeta();
@@ -40,7 +38,7 @@ public class SylvATMGUI
         return elementItem;
     }
 
-    private void atmMenu()
+    private Inventory atmMenu()
     {
         ItemStack open = atmMenuElement(Material.GOLD_BLOCK, ChatColor.GREEN + "Open", new ArrayList<>() {{
             add("§oOpen your account.");
@@ -57,11 +55,33 @@ public class SylvATMGUI
         atmGUI.setItem(1, open);
         atmGUI.setItem(4, card);
         atmGUI.setItem(7, close);
+
+        return atmGUI;
     }
 
-    public void openGUI()
+    private Inventory testMenu()
     {
-        player.openInventory(atmGUI);
+        ItemStack test = atmMenuElement(Material.DIAMOND, ChatColor.YELLOW + "Test", new ArrayList<>() {{
+            add("§oTest");
+        }});
+
+        atmGUI.setItem(4, test);
+
+        return atmGUI;
     }
 
+    private void openGUI(Inventory menu)
+    {
+        player.openInventory(menu);
+    }
+
+    public void openATM()
+    {
+        openGUI(atmMenu());
+    }
+
+    public void openTestMenu()
+    {
+        openGUI(testMenu());
+    }
 }

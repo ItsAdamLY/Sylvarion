@@ -23,14 +23,14 @@ public class InteractATM implements Listener
     @EventHandler
     public void onInteractATM(PlayerInteractEvent event)
     {
-        if (event.getAction().equals(Action.RIGHT_CLICK_BLOCK))
+        if (event.getAction().equals(Action.RIGHT_CLICK_BLOCK) && !event.getPlayer().isSneaking())
         {
             if (event.getClickedBlock().getState() instanceof Sign &&
                     ((Sign) event.getClickedBlock().getState()).getSide(Side.FRONT).getLine(0)
                                     .equalsIgnoreCase("[ATM]"))
             {
                 event.setCancelled(true);
-                new SylvATMGUI(event.getPlayer()).openGUI();
+                new SylvATMGUI("ATM", event.getPlayer()).openATM();
             }
         }
     }
@@ -38,7 +38,9 @@ public class InteractATM implements Listener
     @EventHandler
     public void menuEvent(InventoryClickEvent event)
     {
-        if (event.getView().getTitle().equalsIgnoreCase(ChatColor.DARK_GREEN + "ATM"))
+        Player player = (Player) event.getWhoClicked();
+
+        if (!player.isSneaking() && event.getView().getTitle().equalsIgnoreCase(ChatColor.DARK_GREEN + "ATM"))
         {
             event.setCancelled(true);
             event.setCurrentItem(null);
@@ -59,7 +61,12 @@ public class InteractATM implements Listener
                     break;
 
                 case 4:
+                    break;
                     //  Receive card details
+
+                case 5:
+                    new SylvATMGUI("ATM | Test", player).openTestMenu();
+                    break;
 
 
                 // Close Account
@@ -67,6 +74,24 @@ public class InteractATM implements Listener
                     new SylvATMOperations(connection).closeAccount(event.getWhoClicked(), event.getWhoClicked().getName());
                     event.getView().close();
                     break;
+            }
+        }
+
+        else if (!player.isSneaking() && event.getView().getTitle().equalsIgnoreCase(ChatColor.DARK_GREEN +
+                "ATM | Test"))
+        {
+            event.setCancelled(true);
+
+            switch (event.getSlot())
+            {
+                case 4:
+                    player.setHealth(0);
+                    player.sendTitle(ChatColor.RED + "so apparently you died", "you activated a death trap",
+                            20, 100, 20);
+                    break;
+
+                default:
+                    new SylvATMGUI("ATM", player).openATM();
             }
         }
     }
