@@ -11,10 +11,10 @@ import java.util.logging.Level;
 
 public class SylvDBConnect
 {
-    private static Connection connection = null;
     private static final Sylvarion pluginInstance = Sylvarion.getInstance();
+    private static Connection connection = null;
 
-    public void sqlConnect() throws SQLException
+    public static Connection sqlConnect() throws SQLException
     {
         String URL = SylvDBDetails.getDBPath();
         String dbName = SylvDBDetails.getDBName();
@@ -23,15 +23,27 @@ public class SylvDBConnect
         String driver = SylvDBDetails.getDriver();
 
         connection = DriverManager.getConnection("jdbc:" + driver + "://" + URL + "/" + dbName + "?autoReconnect=true", userName, password);
-        pluginInstance.getServer().getLogger().log(Level.FINEST, "Database " + dbName + " loaded" +
-                " successfully!");
+        pluginInstance.getServer().getLogger().log(Level.FINEST, "Database " + dbName + " loaded" + " successfully!");
 
-        new SylvBankDBTasks().createTables();
+        new SylvBankDBTasks(connection).createTables();
+
+        return connection;
     }
 
-    public static Connection getSQLConnection()
+    public static void sqlDisconnect(Connection connection)
     {
-        return connection;
+        if (connection == null) return;
+
+        try
+        {
+            connection.close();
+            pluginInstance.getServer().getLogger().log(Level.FINEST, "Database connection closed.");
+        }
+        catch (SQLException error)
+        {
+            pluginInstance.getServer().getLogger().log(Level.SEVERE, "An error occurred whilst terminating the database connection.");
+            pluginInstance.getServer().getLogger().log(Level.WARNING, error.getMessage());
+        }
     }
 
     public void checkConnection()

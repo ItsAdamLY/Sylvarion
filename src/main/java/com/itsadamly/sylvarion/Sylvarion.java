@@ -10,6 +10,7 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.UnknownDependencyException;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 
 import java.util.logging.Level;
@@ -31,11 +32,9 @@ public class Sylvarion extends JavaPlugin
         getConfig().options().copyDefaults(true);
         saveDefaultConfig();
 
-        try
+        // to create new table if not exist
+        try (Connection connection = SylvDBConnect.sqlConnect())
         {
-            // to create new table if not exist
-            new SylvDBConnect().sqlConnect();
-            new SylvDBConnect().checkConnection();
             setupEconomy();
         }
         catch (SQLException error)

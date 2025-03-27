@@ -1,7 +1,6 @@
 package com.itsadamly.sylvarion.databases.bank;
 
 import com.itsadamly.sylvarion.Sylvarion;
-import com.itsadamly.sylvarion.databases.SylvDBConnect;
 import com.itsadamly.sylvarion.databases.SylvDBDetails;
 import org.bukkit.entity.Player;
 
@@ -15,7 +14,12 @@ import java.util.List;
 public class SylvBankDBTasks
 {
     private final Sylvarion pluginInstance = Sylvarion.getInstance();
-    private final Connection connectionSQL = SylvDBConnect.getSQLConnection();
+    private final Connection connectionSQL;
+
+    public SylvBankDBTasks(Connection connection)
+    {
+        this.connectionSQL = connection;
+    }
 
     public void createTables() throws SQLException
     {

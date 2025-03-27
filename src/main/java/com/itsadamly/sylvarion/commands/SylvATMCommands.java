@@ -27,7 +27,6 @@ public class SylvATMCommands implements CommandExecutor
     List<String> perms = allPerms();
     List<String> commandList = commandArgs();
     private static final Sylvarion pluginInstance = Sylvarion.getInstance();
-    private final Connection connection = SylvDBConnect.getSQLConnection();
     private final Economy economy = Sylvarion.getEconomy();
 
     @Override
@@ -86,7 +85,7 @@ public class SylvATMCommands implements CommandExecutor
                 }
             }
 
-            try
+            try (Connection connection = SylvDBConnect.sqlConnect())
             {
                 new SylvATMOperations(connection).openAccount(commandSender, player);
             }
@@ -101,11 +100,19 @@ public class SylvATMCommands implements CommandExecutor
 
         else if (args[0].equalsIgnoreCase("close")) // /atm close
         {
-            String username = new SylvATMOperations(connection).getUsername(commandSender, args);
-            if (username == null) return true; // Console
+            try (Connection connection = SylvDBConnect.sqlConnect())
+            {
+                String username = new SylvATMOperations(connection).getUsername(commandSender, args);
+                if (username == null) return true; // Console
 
-            new SylvATMOperations(connection).closeAccount(commandSender, args[1]);
-            return true;
+                new SylvATMOperations(connection).closeAccount(commandSender, args[1]);
+                return true;
+            }
+            catch (SQLException error)
+            {
+                commandSender.sendMessage(ChatColor.RED + "An error occurred. Check console for details.");
+                pluginInstance.getServer().getLogger().log(Level.WARNING, error.getMessage());
+            }
         }
 
         else if (args[0].equalsIgnoreCase("getCard")) // /atm getCard
@@ -116,11 +123,11 @@ public class SylvATMCommands implements CommandExecutor
                 return true;
             }
 
-            try (connection)
+            try (Connection connection = SylvDBConnect.sqlConnect())
             {
                 String username = new SylvATMOperations(connection).getUsername(commandSender, args);
 
-                boolean isUserExist = new SylvBankDBTasks().isUserInDB(username);
+                boolean isUserExist = new SylvBankDBTasks(connection).isUserInDB(username);
 
                 if (!isUserExist)
                 {
@@ -133,7 +140,7 @@ public class SylvATMCommands implements CommandExecutor
                     return true;
                 }
 
-                String cardID = new SylvBankDBTasks().getCardID(username);
+                String cardID = new SylvBankDBTasks(connection).getCardID(username);
                 ItemStack card = new SylvBankCard().createCard(username, cardID);
 
                 Player player = (Player) commandSender;
@@ -155,12 +162,12 @@ public class SylvATMCommands implements CommandExecutor
 
         else if (args[0].equalsIgnoreCase("checkBalance")) // /atm checkBalance (name)
         {
-            String username = new SylvATMOperations(connection).getUsername(commandSender, args);
-            if (username == null) return true; // Console
-
-            try (connection)
+            try (Connection connection = SylvDBConnect.sqlConnect())
             {
-                boolean isUserExist = new SylvBankDBTasks().isUserInDB(username);
+                String username = new SylvATMOperations(connection).getUsername(commandSender, args);
+                if (username == null) return true; // Console
+
+                boolean isUserExist = new SylvBankDBTasks(connection).isUserInDB(username);
 
                 if (!isUserExist)
                 {
@@ -173,7 +180,7 @@ public class SylvATMCommands implements CommandExecutor
                     return true;
                 }
 
-                double balance = new SylvBankDBTasks().getCardBalance(username);
+                double balance = new SylvBankDBTasks(connection).getCardBalance(username);
                 commandSender.sendMessage(ChatColor.GREEN + "Balance: " + balance);
             }
             catch (SQLException error)
@@ -195,10 +202,10 @@ public class SylvATMCommands implements CommandExecutor
                 return true;
             }
 
-            try (connection)
+            try (Connection connection = SylvDBConnect.sqlConnect())
             {
                 // to be checked
-                boolean isUserExist = new SylvBankDBTasks().isUserInDB(args[1]);
+                boolean isUserExist = new SylvBankDBTasks(connection).isUserInDB(args[1]);
 
                 if (!isUserExist)
                 {
@@ -220,7 +227,7 @@ public class SylvATMCommands implements CommandExecutor
                             return true;
                         }
 
-                        new SylvBankDBTasks().setCardBalance(args[1], "add", Double.parseDouble(args[3]));
+                        new SylvBankDBTasks(connection).setCardBalance(args[1], "add", Double.parseDouble(args[3]));
                         commandSender.sendMessage(ChatColor.GREEN + "Balance has been updated.");
                         break;
 
@@ -231,12 +238,12 @@ public class SylvATMCommands implements CommandExecutor
                             return true;
                         }
 
-                        new SylvBankDBTasks().setCardBalance(args[1], "subtract", Double.parseDouble(args[3]));
+                        new SylvBankDBTasks(connection).setCardBalance(args[1], "subtract", Double.parseDouble(args[3]));
                         commandSender.sendMessage(ChatColor.GREEN + "Balance has been updated.");
                         break;
 
                     case "set":
-                        new SylvBankDBTasks().setCardBalance(args[1], "set", Double.parseDouble(args[3]));
+                        new SylvBankDBTasks(connection).setCardBalance(args[1], "set", Double.parseDouble(args[3]));
                         commandSender.sendMessage(ChatColor.GREEN + "Balance has been updated.");
                         break;
 
@@ -264,7 +271,7 @@ public class SylvATMCommands implements CommandExecutor
                 return true;
             }
 
-            try (connection)
+            try (Connection connection = SylvDBConnect.sqlConnect())
             {
                 switch (args[1].toLowerCase())
                 {
@@ -275,7 +282,7 @@ public class SylvATMCommands implements CommandExecutor
                             return true;
                         }
 
-                        new SylvBankDBTasks().setCardBalance("add",
+                        new SylvBankDBTasks(connection).setCardBalance("add",
                                 Double.parseDouble(String.format("%.2f", Double.parseDouble(args[2]))));
                         commandSender.sendMessage(ChatColor.GREEN + "All balances have been updated.");
                         break;
@@ -287,13 +294,13 @@ public class SylvATMCommands implements CommandExecutor
                             return true;
                         }
 
-                        new SylvBankDBTasks().setCardBalance("subtract",
+                        new SylvBankDBTasks(connection).setCardBalance("subtract",
                                 Double.parseDouble(String.format("%.2f", Double.parseDouble(args[2]))));
                         commandSender.sendMessage(ChatColor.GREEN + "All balances have been updated.");
                         break;
 
                     case "set":
-                        new SylvBankDBTasks().setCardBalance("set",
+                        new SylvBankDBTasks(connection).setCardBalance("set",
                                 Double.parseDouble(String.format("%.2f", Double.parseDouble(args[2]))));
                         commandSender.sendMessage(ChatColor.GREEN + "All balances have been updated.");
                         break;
@@ -320,11 +327,11 @@ public class SylvATMCommands implements CommandExecutor
                 return true;
             }
 
-            String username = new SylvATMOperations(connection).getUsername(commandSender, args);
-            if (username == null) return true; // Console
-
-            try (connection)
+            try (Connection connection = SylvDBConnect.sqlConnect())
             {
+                String username = new SylvATMOperations(connection).getUsername(commandSender, args);
+                if (username == null) return true; // Console
+
                 if (args.length == 2)
                     new SylvATMOperations(connection).deposit(commandSender, username,
                             Double.parseDouble(args[1]));

@@ -1,6 +1,7 @@
 package com.itsadamly.sylvarion.events.ATM;
 
 import com.itsadamly.sylvarion.Sylvarion;
+import com.itsadamly.sylvarion.databases.SylvDBConnect;
 import com.itsadamly.sylvarion.databases.bank.SylvBankCard;
 import com.itsadamly.sylvarion.databases.bank.SylvBankDBTasks;
 import net.milkbowl.vault.economy.Economy;
@@ -17,19 +18,19 @@ import java.util.logging.Level;
 
 public class SylvATMOperations
 {
-    private final Connection connection;
     private static final Sylvarion pluginInstance = Sylvarion.getInstance();
+    private final Connection connection;
 
-    public SylvATMOperations(Connection connection)
+    public SylvATMOperations(Connection sqlConnection)
     {
-        this.connection = connection;
+        this.connection = sqlConnection;
     }
 
     public void openAccount(CommandSender sender, Player targetPlayer) throws SQLException
     {
-        try
+        try (connection)
         {
-            boolean isUserExist = new SylvBankDBTasks().isUserInDB(targetPlayer.getName());
+            boolean isUserExist = new SylvBankDBTasks(connection).isUserInDB(targetPlayer.getName());
 
             if (isUserExist)
             {
@@ -45,7 +46,7 @@ public class SylvATMOperations
             String cardID = new SylvBankCard().cardID();
             ItemStack card = new SylvBankCard().createCard(targetPlayer.getName(), cardID);
 
-            new SylvBankDBTasks().createUser(targetPlayer, cardID);
+            new SylvBankDBTasks(connection).createUser(targetPlayer, cardID);
 
             if (targetPlayer.getName().equalsIgnoreCase(sender.getName()))
                 targetPlayer.sendMessage(ChatColor.GREEN + "Your account has been opened.");
@@ -69,7 +70,7 @@ public class SylvATMOperations
     {
         try (connection)
         {
-            boolean isUserExist = new SylvBankDBTasks().isUserInDB(targetName);
+            boolean isUserExist = new SylvBankDBTasks(connection).isUserInDB(targetName);
 
             if (!isUserExist)
             {
@@ -82,7 +83,7 @@ public class SylvATMOperations
                 return;
             }
 
-            new SylvBankDBTasks().deleteUser(targetName);
+            new SylvBankDBTasks(connection).deleteUser(targetName);
 
             if (commandSender.getName().equalsIgnoreCase(targetName))
                 commandSender.sendMessage(ChatColor.GREEN + "Your account has successfully been deleted.");
@@ -108,7 +109,7 @@ public class SylvATMOperations
     {
         try (connection)
         {
-            boolean isUserExist = new SylvBankDBTasks().isUserInDB(targetName);
+            boolean isUserExist = new SylvBankDBTasks(connection).isUserInDB(targetName);
 
             if (!isUserExist)
             {
@@ -131,7 +132,7 @@ public class SylvATMOperations
 
             economy.withdrawPlayer(Bukkit.getOfflinePlayer(targetName), amount);
 
-            new SylvBankDBTasks().setCardBalance(targetName, "add", amount);
+            new SylvBankDBTasks(connection).setCardBalance(targetName, "add", amount);
 
             commandSender.sendMessage(ChatColor.GREEN + "You have successfully deposited " + amount + " into your account.");
         }

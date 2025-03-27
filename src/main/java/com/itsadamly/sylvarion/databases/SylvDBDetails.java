@@ -6,7 +6,7 @@ import java.sql.Connection;
 
 public class SylvDBDetails
 {
-    private static final Connection connectionSQL = SylvDBConnect.getSQLConnection();
+    //private static final Connection connectionSQL = SylvDBConnect.getSQLConnection();
     private static final Sylvarion pluginInstance = Sylvarion.getInstance();
 
     private static String getConfigValue(String key)

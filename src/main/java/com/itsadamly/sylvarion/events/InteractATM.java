@@ -18,8 +18,6 @@ import java.sql.SQLException;
 
 public class InteractATM implements Listener
 {
-    private final Connection connection = SylvDBConnect.getSQLConnection();
-
     @EventHandler
     public void onInteractATM(PlayerInteractEvent event)
     {
@@ -49,7 +47,7 @@ public class InteractATM implements Listener
             {
                 // Open Account
                 case 1:
-                    try (connection)
+                    try (Connection connection = SylvDBConnect.sqlConnect())
                     {
                         new SylvATMOperations(connection).openAccount(event.getWhoClicked(), (Player) event.getWhoClicked());
                         event.getView().close();
@@ -71,9 +69,17 @@ public class InteractATM implements Listener
 
                 // Close Account
                 case 7:
-                    new SylvATMOperations(connection).closeAccount(event.getWhoClicked(), event.getWhoClicked().getName());
-                    event.getView().close();
+                    try (Connection connection = SylvDBConnect.sqlConnect())
+                    {
+                        new SylvATMOperations(connection).closeAccount(event.getWhoClicked(), event.getWhoClicked().getName());
+                        event.getView().close();
+                    }
+                    catch (SQLException error)
+                    {
+                        event.getWhoClicked().sendMessage(ChatColor.RED + "An error occurred, ATM operations cannot be performed.");
+                    }
                     break;
+
             }
         }
 
