@@ -32,7 +32,6 @@ public class SylvATMCommands implements CommandExecutor
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] args)
     {
-
         if (!commandSender.hasPermission(perms.get(0)))
         {
             commandSender.sendMessage(ChatColor.RED + "You do not have the following permission:");
@@ -180,8 +179,11 @@ public class SylvATMCommands implements CommandExecutor
                     return true;
                 }
 
+                long startTime = System.nanoTime();
                 double balance = new SylvBankDBTasks(connection).getCardBalance(username);
-                commandSender.sendMessage(ChatColor.GREEN + "Balance: " + balance);
+                commandSender.sendMessage(ChatColor.YELLOW + "Balance: " + balance);
+                long endTime = System.nanoTime();
+                commandSender.sendMessage(ChatColor.YELLOW + "Time taken: " + (endTime - startTime) / 1000000 + "s");
             }
             catch (SQLException error)
             {

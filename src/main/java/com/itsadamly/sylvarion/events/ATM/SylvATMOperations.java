@@ -1,7 +1,6 @@
 package com.itsadamly.sylvarion.events.ATM;
 
 import com.itsadamly.sylvarion.Sylvarion;
-import com.itsadamly.sylvarion.databases.SylvDBConnect;
 import com.itsadamly.sylvarion.databases.bank.SylvBankCard;
 import com.itsadamly.sylvarion.databases.bank.SylvBankDBTasks;
 import net.milkbowl.vault.economy.Economy;

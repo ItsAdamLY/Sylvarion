@@ -70,6 +70,19 @@ public class SylvATMGUI
         return atmGUI;
     }
 
+    private Inventory inputCardMenu()
+    {
+        ItemStack glass = atmMenuElement(Material.BLACK_STAINED_GLASS_PANE, ChatColor.WHITE + "", new ArrayList<>());
+
+        for (int i = 0; i < 9; i++)
+        {
+            if (i != 4)
+                atmGUI.setItem(i, glass);
+        }
+
+        return atmGUI;
+    }
+
     private void openGUI(Inventory menu)
     {
         player.openInventory(menu);
@@ -84,4 +97,6 @@ public class SylvATMGUI
     {
         openGUI(testMenu());
     }
+
+    public void openInputCardMenu() { openGUI(inputCardMenu()); }
 }
