@@ -104,7 +104,7 @@ public class SylvATMOperations
         }
     }
     
-    public void deposit(CommandSender commandSender, String targetName, double amount)
+    public boolean deposit(CommandSender commandSender, String targetName, double amount)
     {
         try (connection)
         {
@@ -118,28 +118,89 @@ public class SylvATMOperations
                 else
                     commandSender.sendMessage(ChatColor.RED + "This player does not have any account.");
 
-                return;
+                return false;
             }
 
             Economy economy = Sylvarion.getEconomy();
 
-            if (economy.getBalance(Bukkit.getOfflinePlayer(targetName)) < amount)
+            if (economy.getBalance(Bukkit.getOfflinePlayer(commandSender.getName())) < amount)
             {
                 commandSender.sendMessage(ChatColor.RED + "Insufficient money.");
-                return;
+                return false;
             }
 
+            // deposit from bank account into *economy plugin* account
             economy.withdrawPlayer(Bukkit.getOfflinePlayer(targetName), amount);
 
             new SylvBankDBTasks(connection).setCardBalance(targetName, "add", amount);
 
-            commandSender.sendMessage(ChatColor.GREEN + "You have successfully deposited " + amount + " into your account.");
+            if (commandSender.getName().equalsIgnoreCase(targetName))
+                commandSender.sendMessage(ChatColor.GREEN + "You have successfully deposited Ⓤ " + String.format("%.2f", amount)
+                        + " into your account.");
+
+            else
+                commandSender.sendMessage(ChatColor.GREEN + "You have successfully deposited Ⓤ " + String.format("%.2f", amount)
+                        + " into " + targetName + "'s account.");
+
+            return true;
         }
         catch (SQLException error)
         {
             commandSender.sendMessage(ChatColor.RED + "Cannot deposit into user's account. Check console for details.");
             pluginInstance.getServer().getLogger().log(Level.WARNING, error.getMessage());
         }
+
+        return false;
+    }
+
+    public boolean withdraw(CommandSender commandSender, String targetName, double amount)
+    {
+        try (connection)
+        {
+            boolean isUserExist = new SylvBankDBTasks(connection).isUserInDB(targetName);
+
+            if (!isUserExist)
+            {
+                if (targetName.equalsIgnoreCase(commandSender.getName()))
+                    commandSender.sendMessage(ChatColor.RED + "You don't have any account.");
+
+                else
+                    commandSender.sendMessage(ChatColor.RED + "This player does not have any account.");
+
+                return false;
+            }
+
+            Economy economy = Sylvarion.getEconomy();
+            double balance = new SylvBankDBTasks(connection).getCardBalance(targetName);
+
+            if (balance < amount)
+            {
+                commandSender.sendMessage(ChatColor.RED + "Insufficient money in the account.");
+                return false;
+            }
+
+            // deposit from *economy plugin* account into bank account
+            economy.depositPlayer(Bukkit.getOfflinePlayer(targetName), amount);
+
+            new SylvBankDBTasks(connection).setCardBalance(targetName, "subtract", amount);
+
+            if (commandSender.getName().equalsIgnoreCase(targetName))
+                commandSender.sendMessage(ChatColor.GREEN + "You have successfully withdrawed Ⓤ " + String.format("%.2f", amount) +
+                        " from your account.");
+
+            else
+                commandSender.sendMessage(ChatColor.GREEN + "You have successfully withdrawed Ⓤ " + String.format("%.2f", amount) +
+                        " from " + targetName + "'s account.");
+
+            return true;
+        }
+        catch (SQLException error)
+        {
+            commandSender.sendMessage(ChatColor.RED + "Cannot deposit from user's account. Check console for details.");
+            pluginInstance.getServer().getLogger().log(Level.WARNING, error.getMessage());
+        }
+
+        return false;
     }
 
     public String getUsername(CommandSender commandSender, String[] args)

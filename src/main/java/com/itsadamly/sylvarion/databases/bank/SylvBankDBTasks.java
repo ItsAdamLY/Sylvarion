@@ -227,6 +227,7 @@ public class SylvBankDBTasks
         stmt.executeUpdate();
     }
 
+    // will be used
     public void payUser (String srcPlayeruuid, String targetPlayeruuid, float amount) throws SQLException
     {
         PreparedStatement stmt = connectionSQL.prepareStatement(
@@ -290,4 +291,4 @@ public class SylvBankDBTasks
 }
 
 // Authentication for payments/transfers - IceKing
-//
+// Loan/Mortgage system for houses and plots - Cherry and JC

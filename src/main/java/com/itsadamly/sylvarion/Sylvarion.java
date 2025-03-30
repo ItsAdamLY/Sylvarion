@@ -24,6 +24,7 @@ public class Sylvarion extends JavaPlugin
     public void onEnable()
     {
         pluginInstance = this;
+
         getCommand("atm").setExecutor(new SylvATMCommands());
         getCommand("atm").setTabCompleter(new SylvATMTabComplete());
 
@@ -33,8 +34,10 @@ public class Sylvarion extends JavaPlugin
         saveDefaultConfig();
 
         // to create new table if not exist
-        try (Connection connection = SylvDBConnect.sqlConnect())
+        try
         {
+            Connection connection = SylvDBConnect.sqlConnect();
+            connection.close();
             setupEconomy();
         }
         catch (SQLException error)

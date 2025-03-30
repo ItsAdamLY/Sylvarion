@@ -5,7 +5,6 @@ import com.itsadamly.sylvarion.databases.SylvDBConnect;
 import com.itsadamly.sylvarion.databases.bank.SylvBankCard;
 import com.itsadamly.sylvarion.databases.bank.SylvBankDBTasks;
 import com.itsadamly.sylvarion.events.ATM.SylvATMOperations;
-import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -27,7 +26,6 @@ public class SylvATMCommands implements CommandExecutor
     List<String> perms = allPerms();
     List<String> commandList = commandArgs();
     private static final Sylvarion pluginInstance = Sylvarion.getInstance();
-    private final Economy economy = Sylvarion.getEconomy();
 
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] args)
@@ -181,7 +179,7 @@ public class SylvATMCommands implements CommandExecutor
 
                 long startTime = System.nanoTime();
                 double balance = new SylvBankDBTasks(connection).getCardBalance(username);
-                commandSender.sendMessage(ChatColor.YELLOW + "Balance: " + balance);
+                commandSender.sendMessage(ChatColor.YELLOW + "Balance: Ⓤ " + String.format("%.2f", balance));
                 long endTime = System.nanoTime();
                 commandSender.sendMessage(ChatColor.YELLOW + "Time taken: " + (endTime - startTime) / 1000000 + "s");
             }
@@ -339,6 +337,34 @@ public class SylvATMCommands implements CommandExecutor
                             Double.parseDouble(args[1]));
 
                 else new SylvATMOperations(connection).deposit(commandSender, username,
+                        Double.parseDouble(args[2]));
+            }
+            catch (SQLException error)
+            {
+                commandSender.sendMessage(ChatColor.RED + "An error occurred. Check console for details.");
+                pluginInstance.getServer().getLogger().log(Level.WARNING, error.getMessage());
+            }
+        }
+
+        else if (args[0].equalsIgnoreCase("withdraw"))
+        {
+            if (args.length == 1)
+            {
+                commandSender.sendMessage(ChatColor.GOLD + "Syntax:");
+                commandSender.sendMessage(ChatColor.GOLD + "/atm withdraw <targetname> (amount)");
+                return true;
+            }
+
+            try (Connection connection = SylvDBConnect.sqlConnect())
+            {
+                String username = new SylvATMOperations(connection).getUsername(commandSender, args);
+                if (username == null) return true; // Console
+
+                if (args.length == 2)
+                    new SylvATMOperations(connection).withdraw(commandSender, username,
+                            Double.parseDouble(args[1]));
+
+                else new SylvATMOperations(connection).withdraw(commandSender, username,
                         Double.parseDouble(args[2]));
             }
             catch (SQLException error)
