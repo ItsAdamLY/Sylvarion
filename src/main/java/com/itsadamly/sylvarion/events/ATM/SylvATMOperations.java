@@ -1,23 +1,27 @@
 package com.itsadamly.sylvarion.events.ATM;
 
-import com.itsadamly.sylvarion.Sylvarion;
-import com.itsadamly.sylvarion.databases.bank.SylvBankCard;
-import com.itsadamly.sylvarion.databases.bank.SylvBankDBTasks;
-import net.milkbowl.vault.economy.Economy;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.Objects;
+import java.util.logging.Level;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.Objects;
-import java.util.logging.Level;
+import com.itsadamly.sylvarion.Sylvarion;
+import com.itsadamly.sylvarion.databases.SylvDBDetails;
+import com.itsadamly.sylvarion.databases.bank.SylvBankCard;
+import com.itsadamly.sylvarion.databases.bank.SylvBankDBTasks;
+
+import net.milkbowl.vault.economy.Economy;
 
 public class SylvATMOperations
 {
     private static final Sylvarion pluginInstance = Sylvarion.getInstance();
+    private static final String CURRENCY = SylvDBDetails.getCurrencySymbol();
     private final Connection connection;
 
     public SylvATMOperations(Connection sqlConnection)
@@ -135,11 +139,11 @@ public class SylvATMOperations
             new SylvBankDBTasks(connection).setCardBalance(targetName, "add", amount);
 
             if (commandSender.getName().equalsIgnoreCase(targetName))
-                commandSender.sendMessage(ChatColor.GREEN + "You have successfully deposited Ⓤ " + String.format("%.2f", amount)
+                commandSender.sendMessage(ChatColor.GREEN + "You have successfully deposited " + CURRENCY + " " + String.format("%.2f", amount)
                         + " into your account.");
 
             else
-                commandSender.sendMessage(ChatColor.GREEN + "You have successfully deposited Ⓤ " + String.format("%.2f", amount)
+                commandSender.sendMessage(ChatColor.GREEN + "You have successfully deposited " + CURRENCY + " " + String.format("%.2f", amount)
                         + " into " + targetName + "'s account.");
 
             return true;
@@ -185,11 +189,11 @@ public class SylvATMOperations
             new SylvBankDBTasks(connection).setCardBalance(targetName, "subtract", amount);
 
             if (commandSender.getName().equalsIgnoreCase(targetName))
-                commandSender.sendMessage(ChatColor.GREEN + "You have successfully withdrawed Ⓤ " + String.format("%.2f", amount) +
+                commandSender.sendMessage(ChatColor.GREEN + "You have successfully withdrawed " + CURRENCY + " " + String.format("%.2f", amount) +
                         " from your account.");
 
             else
-                commandSender.sendMessage(ChatColor.GREEN + "You have successfully withdrawed Ⓤ " + String.format("%.2f", amount) +
+                commandSender.sendMessage(ChatColor.GREEN + "You have successfully withdrawed " + CURRENCY + " " + String.format("%.2f", amount) +
                         " from " + targetName + "'s account.");
 
             return true;

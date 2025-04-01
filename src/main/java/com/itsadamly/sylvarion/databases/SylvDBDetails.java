@@ -2,8 +2,6 @@ package com.itsadamly.sylvarion.databases;
 
 import com.itsadamly.sylvarion.Sylvarion;
 
-import java.sql.Connection;
-
 public class SylvDBDetails
 {
     //private static final Connection connectionSQL = SylvDBConnect.getSQLConnection();
@@ -44,7 +42,7 @@ public class SylvDBDetails
         return getConfigValue("database.tablenames.user");
     }
 
-    public static String getDBTerminalTableName ()
+    public static String getDBTerminalTableName()
     {
         return getConfigValue("database.tablenames.terminal"); 
     }
@@ -54,4 +52,11 @@ public class SylvDBDetails
         return Double.parseDouble(getConfigValue("initialDeposit"));
     }
 
+    public static String getCurrencySymbol()
+    {
+        if (getConfigValue("currencySymbol") == null || getConfigValue("currencySymbol").isEmpty())
+            return "$"; //default currency symbol
+
+        return getConfigValue("currencySymbol");
+    }
 }

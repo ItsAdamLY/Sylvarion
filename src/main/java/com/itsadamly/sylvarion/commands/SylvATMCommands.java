@@ -1,10 +1,11 @@
 package com.itsadamly.sylvarion.commands;
 
-import com.itsadamly.sylvarion.Sylvarion;
-import com.itsadamly.sylvarion.databases.SylvDBConnect;
-import com.itsadamly.sylvarion.databases.bank.SylvBankCard;
-import com.itsadamly.sylvarion.databases.bank.SylvBankDBTasks;
-import com.itsadamly.sylvarion.events.ATM.SylvATMOperations;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -13,11 +14,12 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Level;
+import com.itsadamly.sylvarion.Sylvarion;
+import com.itsadamly.sylvarion.databases.SylvDBConnect;
+import com.itsadamly.sylvarion.databases.SylvDBDetails;
+import com.itsadamly.sylvarion.databases.bank.SylvBankCard;
+import com.itsadamly.sylvarion.databases.bank.SylvBankDBTasks;
+import com.itsadamly.sylvarion.events.ATM.SylvATMOperations;
 
 public class SylvATMCommands implements CommandExecutor
 {
@@ -26,6 +28,7 @@ public class SylvATMCommands implements CommandExecutor
     List<String> perms = allPerms();
     List<String> commandList = commandArgs();
     private static final Sylvarion pluginInstance = Sylvarion.getInstance();
+    private static final String CURRENCY = SylvDBDetails.getCurrencySymbol();
 
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] args)
@@ -53,7 +56,7 @@ public class SylvATMCommands implements CommandExecutor
             commandSender.sendMessage(ChatColor.GREEN + "Configuration has been reloaded.");
         }
 
-        else if (args[0].equalsIgnoreCase("open")) // /atm open
+        else if (args[0].equalsIgnoreCase("open") || args[0].equalsIgnoreCase("create"))
         {
             Player player = null;
 
@@ -95,14 +98,14 @@ public class SylvATMCommands implements CommandExecutor
             return true;
         }
 
-        else if (args[0].equalsIgnoreCase("close")) // /atm close
+        else if (args[0].equalsIgnoreCase("close") || args[0].equalsIgnoreCase("delete"))
         {
             try (Connection connection = SylvDBConnect.sqlConnect())
             {
                 String username = new SylvATMOperations(connection).getUsername(commandSender, args);
                 if (username == null) return true; // Console
 
-                new SylvATMOperations(connection).closeAccount(commandSender, args[1]);
+                new SylvATMOperations(connection).closeAccount(commandSender, username);
                 return true;
             }
             catch (SQLException error)
@@ -179,7 +182,7 @@ public class SylvATMCommands implements CommandExecutor
 
                 long startTime = System.nanoTime();
                 double balance = new SylvBankDBTasks(connection).getCardBalance(username);
-                commandSender.sendMessage(ChatColor.YELLOW + "Balance: Ⓤ " + String.format("%.2f", balance));
+                commandSender.sendMessage(ChatColor.YELLOW + "Balance: " + CURRENCY + " " + String.format("%.2f", balance));
                 long endTime = System.nanoTime();
                 commandSender.sendMessage(ChatColor.YELLOW + "Time taken: " + (endTime - startTime) / 1000000 + "s");
             }
@@ -192,7 +195,7 @@ public class SylvATMCommands implements CommandExecutor
 
         // /atm updateBalance
         else if (args[0].equalsIgnoreCase("updateBalance") ||
-                args[0].equalsIgnoreCase("updatemoney"))
+                args[0].equalsIgnoreCase("updateMoney"))
         {
             if (args.length < 4)
             {
@@ -283,7 +286,7 @@ public class SylvATMCommands implements CommandExecutor
                         }
 
                         new SylvBankDBTasks(connection).setCardBalance("add",
-                                Double.parseDouble(String.format("%.2f", Double.parseDouble(args[2]))));
+                                Double.parseDouble(String.format("%.2f", Double.valueOf(args[2]))));
                         commandSender.sendMessage(ChatColor.GREEN + "All balances have been updated.");
                         break;
 
@@ -295,13 +298,13 @@ public class SylvATMCommands implements CommandExecutor
                         }
 
                         new SylvBankDBTasks(connection).setCardBalance("subtract",
-                                Double.parseDouble(String.format("%.2f", Double.parseDouble(args[2]))));
+                                Double.parseDouble(String.format("%.2f", Double.valueOf(args[2]))));
                         commandSender.sendMessage(ChatColor.GREEN + "All balances have been updated.");
                         break;
 
                     case "set":
                         new SylvBankDBTasks(connection).setCardBalance("set",
-                                Double.parseDouble(String.format("%.2f", Double.parseDouble(args[2]))));
+                                Double.parseDouble(String.format("%.2f", Double.valueOf(args[2]))));
                         commandSender.sendMessage(ChatColor.GREEN + "All balances have been updated.");
                         break;
 

@@ -1,5 +1,6 @@
 package com.itsadamly.sylvarion.events.ATM;
 
+import com.itsadamly.sylvarion.databases.SylvDBDetails;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -13,6 +14,8 @@ import java.util.List;
 
 public class SylvATMGUI
 {
+    private static final String CURRENCY = SylvDBDetails.getCurrencySymbol();
+
     protected final Inventory atmGUI;
     protected final Player player;
 
@@ -98,7 +101,7 @@ public class SylvATMGUI
         for (int i = 0; i < values.length; i++)
         {
             ItemStack value = atmMenuElement(Material.LIME_STAINED_GLASS_PANE, ChatColor.GREEN +
-                    "Ⓤ " + String.format("%.2f", values[i]), new ArrayList<>());
+                      CURRENCY + " " + String.format("%.2f", values[i]), new ArrayList<>());
 
             atmGUI.setItem(i+1, value);
         }

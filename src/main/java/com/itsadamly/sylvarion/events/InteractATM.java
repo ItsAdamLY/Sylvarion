@@ -1,10 +1,12 @@
 package com.itsadamly.sylvarion.events;
 
-import com.itsadamly.sylvarion.Sylvarion;
-import com.itsadamly.sylvarion.databases.SylvDBConnect;
-import com.itsadamly.sylvarion.databases.bank.SylvBankDBTasks;
-import com.itsadamly.sylvarion.events.ATM.SylvATMGUIOpener;
-import com.itsadamly.sylvarion.events.ATM.SylvATMOperations;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Objects;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -20,16 +22,17 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
+import com.itsadamly.sylvarion.Sylvarion;
+import com.itsadamly.sylvarion.databases.SylvDBConnect;
+import com.itsadamly.sylvarion.databases.SylvDBDetails;
+import com.itsadamly.sylvarion.databases.bank.SylvBankDBTasks;
+import com.itsadamly.sylvarion.events.ATM.SylvATMGUIOpener;
+import com.itsadamly.sylvarion.events.ATM.SylvATMOperations;
 
 public class InteractATM implements Listener
 {
     private static final Sylvarion pluginInstance = Sylvarion.getInstance();
+    private static final String CURRENCY = SylvDBDetails.getCurrencySymbol();
     private final HashMap<String, String> cardTarget = new HashMap<>();
 
     @EventHandler
@@ -166,7 +169,7 @@ public class InteractATM implements Listener
                         double balance = new SylvBankDBTasks(connection).getCardBalance(cardTarget.get(player.getName()));
 
                         String title = "ATM | Balance: " + ChatColor.GREEN +
-                                "Ⓤ " + String.format("%.2f", balance) + ChatColor.DARK_GREEN + ". Continue operations?";
+                                 CURRENCY + String.format("%.2f", balance) + ChatColor.DARK_GREEN + ".\n Continue operations?";
 
                         new SylvATMGUIOpener(title, player).openConfirmMenu();
                     }

@@ -13,3 +13,4 @@ database:
     terminal: ""
 
 initialDeposit: 20.00
+currencySymbol:
