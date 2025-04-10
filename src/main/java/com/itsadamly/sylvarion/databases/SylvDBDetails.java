@@ -4,7 +4,6 @@ import com.itsadamly.sylvarion.Sylvarion;
 
 public class SylvDBDetails
 {
-    //private static final Connection connectionSQL = SylvDBConnect.getSQLConnection();
     private static final Sylvarion pluginInstance = Sylvarion.getInstance();
 
     private static String getConfigValue(String key)

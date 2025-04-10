@@ -36,8 +36,7 @@ public class Sylvarion extends JavaPlugin
         // to create new table if not exist
         try
         {
-            Connection connection = SylvDBConnect.sqlConnect();
-            connection.close();
+            SylvDBConnect.getConnection();
             setupEconomy();
         }
         catch (SQLException error)

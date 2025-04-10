@@ -7,14 +7,18 @@ import org.bukkit.scheduler.BukkitRunnable;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 
 public class SylvDBConnect
 {
     private static final Sylvarion pluginInstance = Sylvarion.getInstance();
-    private static Connection connection = null;
 
-    public static Connection sqlConnect() throws SQLException
+    private static final int POOL_SIZE = 10;
+    private static final List<Connection> connections = new ArrayList<>(POOL_SIZE);
+
+    private static Connection sqlConnect() throws SQLException
     {
         String URL = SylvDBDetails.getDBPath();
         String dbName = SylvDBDetails.getDBName();
@@ -22,15 +26,13 @@ public class SylvDBConnect
         String password = SylvDBDetails.getDBPassword();
         String driver = SylvDBDetails.getDriver();
 
-        connection = DriverManager.getConnection("jdbc:" + driver + "://" + URL + "/" + dbName + "?autoReconnect=true", userName, password);
-        pluginInstance.getServer().getLogger().log(Level.FINEST, "Database " + dbName + " loaded" + " successfully!");
+        Connection initConnection = DriverManager.getConnection("jdbc:" + driver + "://" + URL + "/" + dbName + "?autoReconnect=true", userName, password);
+        new SylvBankDBTasks(initConnection).createTables();
 
-        new SylvBankDBTasks(connection).createTables();
-
-        return connection;
+        return initConnection;
     }
 
-    public static void sqlDisconnect(Connection connection)
+    /*    public static void sqlDisconnect(Connection connection)
     {
         if (connection == null) return;
 
@@ -44,9 +46,25 @@ public class SylvDBConnect
             pluginInstance.getServer().getLogger().log(Level.SEVERE, "An error occurred whilst terminating the database connection.");
             pluginInstance.getServer().getLogger().log(Level.WARNING, error.getMessage());
         }
+    }*/
+
+    public static Connection getConnection() throws SQLException
+    {
+        if (connections.isEmpty())
+        {
+            connections.add(sqlConnect()); // try to connect to SQL
+        }
+
+        return connections.remove(connections.size() - 1);
     }
 
-    public void checkConnection()
+    public static void releaseConnection(Connection connection)
+    {
+        if (connection == null) return;
+        connections.add(connection);
+    }
+
+/*    public void checkConnection()
     {
         new BukkitRunnable()
         {
@@ -67,5 +85,5 @@ public class SylvDBConnect
                 }
             }
         }.runTaskTimer(pluginInstance, 0, 20*60*60);
-    }
+    }*/
 }

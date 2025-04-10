@@ -1,12 +1,12 @@
 package com.itsadamly.sylvarion.events;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
-
+import com.itsadamly.sylvarion.Sylvarion;
+import com.itsadamly.sylvarion.databases.SylvDBConnect;
+import com.itsadamly.sylvarion.databases.SylvDBDetails;
+import com.itsadamly.sylvarion.databases.bank.SylvBankDBTasks;
+import com.itsadamly.sylvarion.events.ATM.SylvATMGUIOpener;
+import com.itsadamly.sylvarion.events.ATM.SylvATMOperations;
+import com.itsadamly.sylvarion.events.ATM.SylvATMSigns;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -14,7 +14,6 @@ import org.bukkit.block.Sign;
 import org.bukkit.block.sign.Side;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
@@ -22,18 +21,32 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-import com.itsadamly.sylvarion.Sylvarion;
-import com.itsadamly.sylvarion.databases.SylvDBConnect;
-import com.itsadamly.sylvarion.databases.SylvDBDetails;
-import com.itsadamly.sylvarion.databases.bank.SylvBankDBTasks;
-import com.itsadamly.sylvarion.events.ATM.SylvATMGUIOpener;
-import com.itsadamly.sylvarion.events.ATM.SylvATMOperations;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Objects;
+import java.util.logging.Level;
 
-public class InteractATM implements Listener
+public class InteractATM extends SylvATMSigns
 {
     private static final Sylvarion pluginInstance = Sylvarion.getInstance();
     private static final String CURRENCY = SylvDBDetails.getCurrencySymbol();
     private final HashMap<String, String> cardTarget = new HashMap<>();
+    private static Connection connection = null;
+
+    static
+    {
+        try
+        {
+            connection = SylvDBConnect.getConnection();
+        }
+        catch (SQLException e)
+        {
+            pluginInstance.getServer().getLogger().log(Level.WARNING, "An error occurred, cannot connect to database.");
+        }
+    }
 
     @EventHandler
     public void onInteractATM(PlayerInteractEvent event)
@@ -67,7 +80,7 @@ public class InteractATM implements Listener
             {
                 // Open Account
                 case 1:
-                    try (Connection connection = SylvDBConnect.sqlConnect())
+                    try 
                     {
                         new SylvATMOperations(connection).openAccount(event.getWhoClicked(), (Player) event.getWhoClicked());
                         event.getView().close();
@@ -89,7 +102,7 @@ public class InteractATM implements Listener
 
                 // Close Account
                 case 7:
-                    try (Connection connection = SylvDBConnect.sqlConnect())
+                    try
                     {
                         new SylvATMOperations(connection).closeAccount(event.getWhoClicked(), event.getWhoClicked().getName());
                         event.getView().close();
@@ -97,6 +110,10 @@ public class InteractATM implements Listener
                     catch (SQLException error)
                     {
                         event.getWhoClicked().sendMessage(ChatColor.RED + "An error occurred, ATM operations cannot be performed.");
+                    }
+                    finally
+                    {
+                        SylvDBConnect.releaseConnection(connection);
                     }
                     break;
             }
@@ -163,19 +180,23 @@ public class InteractATM implements Listener
                     break;
 
                 case 3:
-                    try (Connection connection = SylvDBConnect.sqlConnect())
+                    try
                     {
                         new SylvBankDBTasks(connection).getCardBalance(cardTarget.get(player.getName()));
                         double balance = new SylvBankDBTasks(connection).getCardBalance(cardTarget.get(player.getName()));
 
                         String title = "ATM | Balance: " + ChatColor.GREEN +
-                                 CURRENCY + String.format("%.2f", balance) + ChatColor.DARK_GREEN + ".\n Continue operations?";
+                                 CURRENCY + " " + String.format("%.2f", balance) + ChatColor.DARK_GREEN + ". Continue?";
 
                         new SylvATMGUIOpener(title, player).openConfirmMenu();
                     }
                     catch (SQLException error)
                     {
                         player.sendMessage(ChatColor.RED + "An error occurred. Cannot fetch balance.");
+                    }
+                    finally
+                    {
+                        SylvDBConnect.releaseConnection(connection);
                     }
                     break;
 
@@ -207,11 +228,11 @@ public class InteractATM implements Listener
 
             switch (event.getSlot())
             {
-                case 3:
+                case 2:
                     new SylvATMGUIOpener("ATM | Operations", player).openATMOperationsMenu();
                     break;
 
-                case 5:
+                case 6:
                     cardTarget.remove(player.getName());
                     event.getView().close();
                     break;
@@ -258,7 +279,7 @@ public class InteractATM implements Listener
                 {
 
                     //new SylvATMGUIOpener("ATM | Confirm Withdraw: $" + amount, player).openConfirmMenu();
-                    try (Connection connection = SylvDBConnect.sqlConnect())
+                    try
                     {
                         success = new SylvATMOperations(connection).withdraw(player, cardTarget.get(player.getName()), amount);
                         if (success) event.getView().close();
@@ -267,11 +288,15 @@ public class InteractATM implements Listener
                     {
                         player.sendMessage(ChatColor.RED + "An error occurred. Cannot withdraw.");
                     }
+                    finally
+                    {
+                        SylvDBConnect.releaseConnection(connection);
+                    }
                 }
                 else if (event.getView().getTitle().equalsIgnoreCase(ChatColor.DARK_GREEN + "ATM | Deposit"))
                 {
                     //new SylvATMGUIOpener("ATM | Confirm Deposit: $" + amount, player).openConfirmMenu();
-                    try (Connection connection = SylvDBConnect.sqlConnect())
+                    try 
                     {
                         success = new SylvATMOperations(connection).deposit(player, cardTarget.get(player.getName()), amount);
                         if (success) event.getView().close();
@@ -279,6 +304,10 @@ public class InteractATM implements Listener
                     catch (SQLException error)
                     {
                         player.sendMessage(ChatColor.RED + "An error occurred. Cannot deposit.");
+                    }
+                    finally
+                    {
+                        SylvDBConnect.releaseConnection(connection);
                     }
                 }
             }
@@ -332,7 +361,7 @@ public class InteractATM implements Listener
                 cardDigits.clear();
                 cardDigits = null;
 
-                try (Connection connection = SylvDBConnect.sqlConnect())
+                try
                 {
                     String getCardOwner = new SylvBankDBTasks(connection).getPlayerNameByCard(cardID);
 
@@ -348,6 +377,10 @@ public class InteractATM implements Listener
                 catch (SQLException error)
                 {
                     player.sendMessage(ChatColor.RED + "An error occurred, ATM operations cannot be performed.");
+                }
+                finally
+                {
+                    SylvDBConnect.releaseConnection(connection);
                 }
             }
 

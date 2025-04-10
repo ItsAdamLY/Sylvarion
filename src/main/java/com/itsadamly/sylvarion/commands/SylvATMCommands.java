@@ -29,7 +29,22 @@ public class SylvATMCommands implements CommandExecutor
     List<String> commandList = commandArgs();
     private static final Sylvarion pluginInstance = Sylvarion.getInstance();
     private static final String CURRENCY = SylvDBDetails.getCurrencySymbol();
-
+    private static Connection connection = null;
+    
+    static
+    {
+        try
+        {
+            connection = SylvDBConnect.getConnection();
+        }
+        catch (SQLException e)
+        {
+            pluginInstance.getServer().getLogger().log(Level.WARNING, "An error occured, cannot connect to database. " +
+                    "Check console for details.");
+            pluginInstance.getServer().getLogger().log(Level.WARNING, e.getMessage());
+        }
+    }
+    
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] args)
     {
@@ -84,8 +99,8 @@ public class SylvATMCommands implements CommandExecutor
                     return true;
                 }
             }
-
-            try (Connection connection = SylvDBConnect.sqlConnect())
+            
+            try
             {
                 new SylvATMOperations(connection).openAccount(commandSender, player);
             }
@@ -94,13 +109,17 @@ public class SylvATMCommands implements CommandExecutor
                 commandSender.sendMessage(ChatColor.RED + "Cannot create user. Check console for details.");
                 pluginInstance.getServer().getLogger().log(Level.WARNING, error.getMessage());
             }
+            finally
+            {
+                SylvDBConnect.releaseConnection(connection);
+            }
 
             return true;
         }
 
         else if (args[0].equalsIgnoreCase("close") || args[0].equalsIgnoreCase("delete"))
         {
-            try (Connection connection = SylvDBConnect.sqlConnect())
+            try
             {
                 String username = new SylvATMOperations(connection).getUsername(commandSender, args);
                 if (username == null) return true; // Console
@@ -113,6 +132,10 @@ public class SylvATMCommands implements CommandExecutor
                 commandSender.sendMessage(ChatColor.RED + "An error occurred. Check console for details.");
                 pluginInstance.getServer().getLogger().log(Level.WARNING, error.getMessage());
             }
+            finally
+            {
+                SylvDBConnect.releaseConnection(connection);
+            }
         }
 
         else if (args[0].equalsIgnoreCase("getCard")) // /atm getCard
@@ -123,7 +146,7 @@ public class SylvATMCommands implements CommandExecutor
                 return true;
             }
 
-            try (Connection connection = SylvDBConnect.sqlConnect())
+            try
             {
                 String username = new SylvATMOperations(connection).getUsername(commandSender, args);
 
@@ -158,11 +181,15 @@ public class SylvATMCommands implements CommandExecutor
                 commandSender.sendMessage(ChatColor.RED + "An error occurred. Check console for details.");
                 pluginInstance.getServer().getLogger().log(Level.WARNING, error.getMessage());
             }
+            finally
+            {
+                SylvDBConnect.releaseConnection(connection);
+            }
         }
 
         else if (args[0].equalsIgnoreCase("checkBalance")) // /atm checkBalance (name)
         {
-            try (Connection connection = SylvDBConnect.sqlConnect())
+            try 
             {
                 String username = new SylvATMOperations(connection).getUsername(commandSender, args);
                 if (username == null) return true; // Console
@@ -182,14 +209,20 @@ public class SylvATMCommands implements CommandExecutor
 
                 long startTime = System.nanoTime();
                 double balance = new SylvBankDBTasks(connection).getCardBalance(username);
-                commandSender.sendMessage(ChatColor.YELLOW + "Balance: " + CURRENCY + " " + String.format("%.2f", balance));
+                commandSender.sendMessage(ChatColor.YELLOW + "Balance: " + ChatColor.GREEN + CURRENCY + " " +
+                        String.format("%.2f", balance));
                 long endTime = System.nanoTime();
-                commandSender.sendMessage(ChatColor.YELLOW + "Time taken: " + (endTime - startTime) / 1000000 + "s");
+                commandSender.sendMessage(startTime + " " + endTime);
+                commandSender.sendMessage(ChatColor.YELLOW + "Time taken: " + (endTime - startTime) / 1000000 + "ms");
             }
             catch (SQLException error)
             {
                 commandSender.sendMessage(ChatColor.RED + "An error occured. Check console for details.");
                 pluginInstance.getServer().getLogger().log(Level.WARNING, error.getMessage());
+            }
+            finally
+            {
+                SylvDBConnect.releaseConnection(connection);
             }
         }
 
@@ -205,7 +238,7 @@ public class SylvATMCommands implements CommandExecutor
                 return true;
             }
 
-            try (Connection connection = SylvDBConnect.sqlConnect())
+            try 
             {
                 // to be checked
                 boolean isUserExist = new SylvBankDBTasks(connection).isUserInDB(args[1]);
@@ -261,6 +294,10 @@ public class SylvATMCommands implements CommandExecutor
                 commandSender.sendMessage(ChatColor.RED + "An error occurred. Check console for details.");
                 pluginInstance.getServer().getLogger().log(Level.WARNING, error.getMessage());
             }
+            finally
+            {
+                SylvDBConnect.releaseConnection(connection);
+            }
         }
 
         else if (args[0].equalsIgnoreCase("updateBalanceAll") ||
@@ -274,7 +311,7 @@ public class SylvATMCommands implements CommandExecutor
                 return true;
             }
 
-            try (Connection connection = SylvDBConnect.sqlConnect())
+            try 
             {
                 switch (args[1].toLowerCase())
                 {
@@ -319,6 +356,10 @@ public class SylvATMCommands implements CommandExecutor
                 commandSender.sendMessage(ChatColor.RED + "An error occurred. Check console for details.");
                 pluginInstance.getServer().getLogger().log(Level.WARNING, error.getMessage());
             }
+            finally
+            {
+                SylvDBConnect.releaseConnection(connection);
+            }
         }
 
         else if (args[0].equalsIgnoreCase("deposit"))
@@ -330,7 +371,7 @@ public class SylvATMCommands implements CommandExecutor
                 return true;
             }
 
-            try (Connection connection = SylvDBConnect.sqlConnect())
+            try 
             {
                 String username = new SylvATMOperations(connection).getUsername(commandSender, args);
                 if (username == null) return true; // Console
@@ -347,6 +388,10 @@ public class SylvATMCommands implements CommandExecutor
                 commandSender.sendMessage(ChatColor.RED + "An error occurred. Check console for details.");
                 pluginInstance.getServer().getLogger().log(Level.WARNING, error.getMessage());
             }
+            finally
+            {
+                SylvDBConnect.releaseConnection(connection);
+            }
         }
 
         else if (args[0].equalsIgnoreCase("withdraw"))
@@ -358,7 +403,7 @@ public class SylvATMCommands implements CommandExecutor
                 return true;
             }
 
-            try (Connection connection = SylvDBConnect.sqlConnect())
+            try
             {
                 String username = new SylvATMOperations(connection).getUsername(commandSender, args);
                 if (username == null) return true; // Console
@@ -375,6 +420,10 @@ public class SylvATMCommands implements CommandExecutor
                 commandSender.sendMessage(ChatColor.RED + "An error occurred. Check console for details.");
                 pluginInstance.getServer().getLogger().log(Level.WARNING, error.getMessage());
             }
+            finally
+            {
+                SylvDBConnect.releaseConnection(connection);
+            }
         }
 
         else
@@ -390,6 +439,7 @@ public class SylvATMCommands implements CommandExecutor
     {
         perms = new ArrayList<>();
         perms.add("bankcommand");
+        perms.add("banksign");
         return perms;
     }
 

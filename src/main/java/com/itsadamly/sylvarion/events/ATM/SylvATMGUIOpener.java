@@ -7,7 +7,7 @@ public class SylvATMGUIOpener extends SylvATMGUI
 {
     public SylvATMGUIOpener(String title, Player player)
     {
-        super(title, player);
+        super(title, player); // "extends" the constructor of SylvATMGUI
     }
 
     private void openGUI(Inventory menu)

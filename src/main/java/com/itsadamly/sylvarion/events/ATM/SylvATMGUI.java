@@ -116,8 +116,8 @@ public class SylvATMGUI
         ItemStack yes = atmMenuElement(Material.GREEN_TERRACOTTA, ChatColor.GREEN + "Yes", new ArrayList<>());
         ItemStack no = atmMenuElement(Material.RED_TERRACOTTA, ChatColor.RED + "No", new ArrayList<>());
 
-        atmGUI.setItem(3, yes);
-        atmGUI.setItem(5, no);
+        atmGUI.setItem(2, yes);
+        atmGUI.setItem(6, no);
 
         return atmGUI;
     }

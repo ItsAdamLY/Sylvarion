@@ -31,7 +31,7 @@ public class SylvATMOperations
 
     public void openAccount(CommandSender sender, Player targetPlayer) throws SQLException
     {
-        try (connection)
+        try
         {
             boolean isUserExist = new SylvBankDBTasks(connection).isUserInDB(targetPlayer.getName());
 
@@ -61,7 +61,6 @@ public class SylvATMOperations
             }
 
             targetPlayer.getInventory().addItem(card);
-
         }
         catch (NullPointerException error)
         {
@@ -69,7 +68,7 @@ public class SylvATMOperations
         }
     }
 
-    public void closeAccount(CommandSender commandSender, String targetName)
+    public void closeAccount(CommandSender commandSender, String targetName) throws SQLException
     {
         try (connection)
         {
@@ -108,7 +107,7 @@ public class SylvATMOperations
         }
     }
     
-    public boolean deposit(CommandSender commandSender, String targetName, double amount)
+    public boolean deposit(CommandSender commandSender, String targetName, double amount) throws SQLException
     {
         try (connection)
         {
@@ -157,7 +156,7 @@ public class SylvATMOperations
         return false;
     }
 
-    public boolean withdraw(CommandSender commandSender, String targetName, double amount)
+    public boolean withdraw(CommandSender commandSender, String targetName, double amount) throws SQLException
     {
         try (connection)
         {
@@ -207,7 +206,7 @@ public class SylvATMOperations
         return false;
     }
 
-    public String getUsername(CommandSender commandSender, String[] args)
+    public String getUsername(CommandSender commandSender, String[] args) throws NullPointerException
     {
         String username = null;
 

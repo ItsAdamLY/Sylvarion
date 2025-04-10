@@ -35,7 +35,7 @@ public class SylvBankDBTasks
         );
         userTableStmt.executeUpdate();
 
-        /*PreparedStatement terminalTableStmt = connectionSQL.prepareStatement(
+/*        PreparedStatement terminalTableStmt = connectionSQL.prepareStatement(
             "CREATE TABLE IF NOT EXISTS " + SylvDBDetails.getDBTerminalTableName() + "(" + 
                 "ID INT NOT NULL AUTO_INCREMENT," + 
                 "CoordX INT NOT NULL," + 
@@ -47,7 +47,7 @@ public class SylvBankDBTasks
                 "PRIMARY KEY (ID)" + 
             ")"
         ); 
-        terminalTableStmt.executeUpdate(); */
+        terminalTableStmt.executeUpdate();*/
     }
 
     public void createProcedures() throws SQLException
@@ -175,7 +175,7 @@ public class SylvBankDBTasks
         ResultSet result = stmt.executeQuery();
 
         return result.next() ? result.getString(1) : null;
-        // if (result.next()) return result.getString(1);
+        // if (result.next()) return result.getString(1); return null;
         // ─ Used to move the cursor to the next row, and check if the data exists & matches
     }
 
