@@ -42,7 +42,8 @@ public class SylvDBDetails
     }
 
     public static double getDepositValue() {
-        return Double.parseDouble(getConfigValue("initialDeposit"));
+        String val = getConfigValue("initialDeposit", "0.0");
+        return Double.parseDouble(val);
     }
 
     public static String getCurrencySymbol() {
