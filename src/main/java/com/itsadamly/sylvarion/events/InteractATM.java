@@ -7,8 +7,10 @@ import com.itsadamly.sylvarion.databases.bank.SylvBankDBTasks;
 import com.itsadamly.sylvarion.events.ATM.SylvATMGUIOpener;
 import com.itsadamly.sylvarion.events.ATM.SylvATMOperations;
 import com.itsadamly.sylvarion.events.ATM.SylvATMSigns;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Sign;
 import org.bukkit.block.sign.Side;
@@ -23,290 +25,193 @@ import org.bukkit.inventory.ItemStack;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.logging.Level;
 
-public class InteractATM extends SylvATMSigns
-{
+public class InteractATM extends SylvATMSigns {
     private static final Sylvarion pluginInstance = Sylvarion.getInstance();
+    private static final MiniMessage MM = MiniMessage.miniMessage();
     private static final String CURRENCY = SylvDBDetails.getCurrencySymbol();
     private final HashMap<String, String> cardTarget = new HashMap<>();
     private static Connection connection = null;
 
-    static
-    {
-        try
-        {
+    static {
+        try {
             connection = SylvDBConnect.getConnection();
-        }
-        catch (SQLException e)
-        {
-            pluginInstance.getServer().getLogger().log(Level.WARNING, "An error occurred, cannot connect to database.");
+        } catch (SQLException e) {
+            pluginInstance.getLogger().log(Level.WARNING, "An error occurred, cannot connect to database.");
         }
     }
 
     @EventHandler
-    public void onInteractATM(PlayerInteractEvent event)
-    {
-        if (event.getAction().equals(Action.RIGHT_CLICK_BLOCK) && !event.getPlayer().isSneaking())
-        {
-            if (event.getClickedBlock().getState() instanceof Sign &&
-                    ((Sign) event.getClickedBlock().getState()).getSide(Side.FRONT).getLine(0)
-                                    .equalsIgnoreCase("[ATM]"))
-            {
+    public void onInteractATM(PlayerInteractEvent event) {
+        if (event.getAction().equals(Action.RIGHT_CLICK_BLOCK) && !event.getPlayer().isSneaking()) {
+            if (Objects.requireNonNull(event.getClickedBlock()).getState() instanceof Sign &&
+                    ((Sign) event.getClickedBlock().getState()).getSide(Side.FRONT).line(0).toString()
+                            .equalsIgnoreCase("[ATM]")) {
                 event.setCancelled(true);
-                new SylvATMGUIOpener("ATM", event.getPlayer()).openATM();
+                new SylvATMGUIOpener("<dark_green>ATM", event.getPlayer()).openATM();
             }
         }
     }
 
     @EventHandler
-    public void menuEvent(InventoryClickEvent event)
-    {
+    public void menuEvent(InventoryClickEvent event) {
         Player player = (Player) event.getWhoClicked();
+        String title = event.getView().title().toString();
 
-        if (event.getView().getTitle().equalsIgnoreCase(ChatColor.DARK_GREEN + "ATM"))
-        {
-            if (event.getClickedInventory() == null || event.getClickedInventory().equals(player.getInventory()))
-            {
+        if (title.equals(MM.deserialize("<dark_green>ATM").toString())) {
+            if (event.getClickedInventory() == null || event.getClickedInventory().equals(player.getInventory())) {
                 event.setCancelled(true);
                 return;
             }
 
-            switch (event.getSlot())
-            {
-                // Open Account
+            switch (event.getSlot()) {
                 case 1:
-                    try 
-                    {
+                    try {
                         new SylvATMOperations(connection).openAccount(event.getWhoClicked(), (Player) event.getWhoClicked());
                         event.getView().close();
-                    }
-                    catch (SQLException error)
-                    {
-                        event.getWhoClicked().sendMessage(ChatColor.RED + "An error occurred, ATM operations cannot be performed.");
+                    } catch (SQLException error) {
+                        event.getWhoClicked().sendMessage(MM.deserialize("<red>An error occurred, ATM operations cannot be performed."));
                     }
                     break;
-
                 case 4:
-                    new SylvATMGUIOpener("ATM | Insert Card", player).openInputCardMenu();
+                    new SylvATMGUIOpener("<dark_green>ATM | Insert Card", player).openInputCardMenu();
                     break;
-                //  Receive card details
-
                 case 5:
-                    new SylvATMGUIOpener("ATM | Test", player).openTestMenu();
+                    new SylvATMGUIOpener("<dark_green>ATM | Test", player).openTestMenu();
                     break;
-
-                // Close Account
                 case 7:
-                    try
-                    {
+                    try {
                         new SylvATMOperations(connection).closeAccount(event.getWhoClicked(), event.getWhoClicked().getName());
                         event.getView().close();
-                    }
-                    catch (SQLException error)
-                    {
-                        event.getWhoClicked().sendMessage(ChatColor.RED + "An error occurred, ATM operations cannot be performed.");
-                    }
-                    finally
-                    {
+                    } catch (SQLException error) {
+                        event.getWhoClicked().sendMessage(MM.deserialize("<red>An error occurred, ATM operations cannot be performed."));
+                    } finally {
                         SylvDBConnect.releaseConnection(connection);
                     }
                     break;
             }
             event.setCancelled(true);
-            //new SylvATMGUIOpener("ATM", player).openTestMenu();
-
         }
-
-        else if (!player.isSneaking() && event.getView().getTitle().equalsIgnoreCase(ChatColor.DARK_GREEN +
-                "ATM | Test"))
-        {
+        else if (!player.isSneaking() && title.equals(MM.deserialize("<dark_green>ATM | Test").toString())) {
             event.setCancelled(true);
-
-            switch (event.getSlot())
-            {
-                case 4:
-                    player.setHealth(0);
-                    player.sendTitle(ChatColor.RED + "so apparently you died", "you activated a death trap", 20, 100, 20);
-                    break;
-
-                default:
-                    new SylvATMGUIOpener("ATM", player).openATM();
+            if (event.getSlot() == 4) {
+                player.setHealth(0);
+                player.showTitle(Title.title(
+                                MM.deserialize("<red>so apparently you died"),
+                                MM.deserialize("you activated a death trap"),
+                                Title.Times.times(Duration.ofSeconds(1), Duration.ofMillis(5), Duration.ofMillis(1))
+                        )
+                );
+            } else {
+                new SylvATMGUIOpener("<dark_green>ATM", player).openATM();
             }
         }
-
-        else if ((event.getView().getTitle().equalsIgnoreCase(
-                        ChatColor.DARK_GREEN + "ATM | Insert Card")))
-        {
+        else if (title.equals(MM.deserialize("<dark_green>ATM | Insert Card").toString())) {
             if (event.getClickedInventory() == null) return;
-
-            if (event.getSlot() != 4 && !event.getClickedInventory().equals(event.getWhoClicked().getInventory()))
-            {
-                // if the player clicks on the black glasses
+            if (event.getSlot() != 4 && !event.getClickedInventory().equals(event.getWhoClicked().getInventory())) {
                 event.setCancelled(true);
                 return;
             }
-
-            // the scheduler is for handling timings for inventory updates
             Bukkit.getScheduler().runTaskLater(pluginInstance, () ->
-                            itemInputProcess(event.getInventory(), (Player) event.getWhoClicked()),
-
-                    1);
+                    itemInputProcess(event.getInventory(), (Player) event.getWhoClicked()), 1);
         }
-
-        else if (event.getView().getTitle().equalsIgnoreCase(
-                ChatColor.DARK_GREEN + "ATM | Operations"))
-        {
+        else if (title.equals(MM.deserialize("<dark_green>ATM | Operations").toString())) {
             event.setCancelled(true);
-
-            if (event.getClickedInventory() == null || event.getClickedInventory().equals(player.getInventory()))
-            {
+            if (event.getClickedInventory() == null || event.getClickedInventory().equals(player.getInventory())) {
                 return;
             }
-
-            switch (event.getSlot())
-            {
+            switch (event.getSlot()) {
                 case 0:
                     cardTarget.remove(player.getName());
-                    new SylvATMGUIOpener("ATM", player).openATM();
+                    new SylvATMGUIOpener("<dark_green>ATM", player).openATM();
                     break;
-
                 case 2:
-                    new SylvATMGUIOpener("ATM | Withdraw", player).openValuesMenu();
+                    new SylvATMGUIOpener("<dark_green>ATM | Withdraw", player).openValuesMenu();
                     break;
-
                 case 3:
-                    try
-                    {
-                        new SylvBankDBTasks(connection).getCardBalance(cardTarget.get(player.getName()));
+                    try {
                         double balance = new SylvBankDBTasks(connection).getCardBalance(cardTarget.get(player.getName()));
-
-                        String title = "ATM | Balance: " + ChatColor.GREEN +
-                                 CURRENCY + " " + String.format("%.2f", balance) + ChatColor.DARK_GREEN + ". Continue?";
-
-                        new SylvATMGUIOpener(title, player).openConfirmMenu();
-                    }
-                    catch (SQLException error)
-                    {
-                        player.sendMessage(ChatColor.RED + "An error occurred. Cannot fetch balance.");
-                    }
-                    finally
-                    {
+                        Component titleComp = MM.deserialize("<dark_green>ATM | Balance: <green>" +
+                                CURRENCY + " " + String.format("%.2f", balance) + "<dark_green>. Continue?");
+                        new SylvATMGUIOpener(titleComp, player).openConfirmMenu();
+                    } catch (SQLException error) {
+                        player.sendMessage(MM.deserialize("<red>An error occurred. Cannot fetch balance."));
+                    } finally {
                         SylvDBConnect.releaseConnection(connection);
                     }
                     break;
-
                 case 5:
-                    new SylvATMGUIOpener("ATM | Deposit", player).openValuesMenu();
+                    new SylvATMGUIOpener("<dark_green>ATM | Deposit", player).openValuesMenu();
                     break;
-
                 case 6:
                     event.getView().close();
                     cardTarget.remove(player.getName());
-                    player.sendMessage(ChatColor.RED + "TBD");
+                    player.sendMessage(MM.deserialize("<red>TBD"));
                     break;
-
                 case 8:
                     event.getView().close();
                     cardTarget.remove(player.getName());
                     break;
             }
         }
-
-        else if (event.getView().getTitle().contains("ATM | Balance:"))
-        {
+        else if (title.contains("ATM | Balance:")) {
             event.setCancelled(true);
-
-            if (event.getClickedInventory() == null || event.getClickedInventory().equals(player.getInventory()))
-            {
+            if (event.getClickedInventory() == null || event.getClickedInventory().equals(player.getInventory())) {
                 return;
             }
-
-            switch (event.getSlot())
-            {
+            switch (event.getSlot()) {
                 case 2:
-                    new SylvATMGUIOpener("ATM | Operations", player).openATMOperationsMenu();
+                    new SylvATMGUIOpener("<dark_green>ATM | Operations", player).openATMOperationsMenu();
                     break;
-
                 case 6:
                     cardTarget.remove(player.getName());
                     event.getView().close();
                     break;
             }
         }
-
-        else if (event.getView().getTitle().equalsIgnoreCase(ChatColor.DARK_GREEN + "ATM | Withdraw") ||
-                    event.getView().getTitle().equalsIgnoreCase(ChatColor.DARK_GREEN + "ATM | Deposit"))
-        {
+        else if (title.equals(MM.deserialize("<dark_green>ATM | Withdraw").toString()) ||
+                title.equals(MM.deserialize("<dark_green>ATM | Deposit").toString())) {
             event.setCancelled(true);
             double amount = 0;
-
-            if (event.getClickedInventory() == null || event.getClickedInventory().equals(player.getInventory()))
-            {
+            if (event.getClickedInventory() == null || event.getClickedInventory().equals(player.getInventory())) {
                 return;
             }
-
-            double[] values = { 10.00, 20.00, 50.00, 100.00, 200.00, 500.00, 1000.00 };
-
-            if (event.getSlot() >= 1 && event.getSlot() <= 7)
-            {
+            double[] values = {10.00, 20.00, 50.00, 100.00, 200.00, 500.00, 1000.00};
+            if (event.getSlot() >= 1 && event.getSlot() <= 7) {
                 amount = values[event.getSlot() - 1];
-            }
-
-            else
-            {
-                if (event.getSlot() == 0)
-                {
-                    new SylvATMGUIOpener("ATM | Operations", player).openATMOperationsMenu();
+            } else {
+                if (event.getSlot() == 0) {
+                    new SylvATMGUIOpener("<dark_green>ATM | Operations", player).openATMOperationsMenu();
                     return;
-                }
-                else if (event.getSlot() == 8)
-                {
+                } else if (event.getSlot() == 8) {
                     event.getView().close();
                     return;
                 }
             }
-
-            if (event.getSlot() != 0 && event.getSlot() != 8)
-            {
+            if (event.getSlot() != 0 && event.getSlot() != 8) {
                 boolean success;
-
-                if (event.getView().getTitle().equalsIgnoreCase(ChatColor.DARK_GREEN + "ATM | Withdraw"))
-                {
-
-                    //new SylvATMGUIOpener("ATM | Confirm Withdraw: $" + amount, player).openConfirmMenu();
-                    try
-                    {
+                if (title.equals(MM.deserialize("<dark_green>ATM | Withdraw").toString())) {
+                    try {
                         success = new SylvATMOperations(connection).withdraw(player, cardTarget.get(player.getName()), amount);
                         if (success) event.getView().close();
-                    }
-                    catch (SQLException error)
-                    {
-                        player.sendMessage(ChatColor.RED + "An error occurred. Cannot withdraw.");
-                    }
-                    finally
-                    {
+                    } catch (SQLException error) {
+                        player.sendMessage(MM.deserialize("<red>An error occurred. Cannot withdraw."));
+                    } finally {
                         SylvDBConnect.releaseConnection(connection);
                     }
-                }
-                else if (event.getView().getTitle().equalsIgnoreCase(ChatColor.DARK_GREEN + "ATM | Deposit"))
-                {
-                    //new SylvATMGUIOpener("ATM | Confirm Deposit: $" + amount, player).openConfirmMenu();
-                    try 
-                    {
+                } else if (title.equals(MM.deserialize("<dark_green>ATM | Deposit").toString())) {
+                    try {
                         success = new SylvATMOperations(connection).deposit(player, cardTarget.get(player.getName()), amount);
                         if (success) event.getView().close();
-                    }
-                    catch (SQLException error)
-                    {
-                        player.sendMessage(ChatColor.RED + "An error occurred. Cannot deposit.");
-                    }
-                    finally
-                    {
+                    } catch (SQLException error) {
+                        player.sendMessage(MM.deserialize("<red>An error occurred. Cannot deposit."));
+                    } finally {
                         SylvDBConnect.releaseConnection(connection);
                     }
                 }
@@ -315,84 +220,52 @@ public class InteractATM extends SylvATMSigns
     }
 
     @EventHandler
-    public void onMenuClose(InventoryCloseEvent event)
-    {
-       if (!(event.getView().getTitle().equalsIgnoreCase(
-               ChatColor.DARK_GREEN + "ATM | Insert Card")))
-           return;
-
-       Inventory inventory = event.getInventory();
-       ItemStack inputItem = inventory.getItem(4);
-
-       if (inputItem != null && !inputItem.getType().equals(Material.AIR))
-           event.getPlayer().getInventory().addItem(inputItem);
-
-       cardTarget.remove(event.getPlayer().getName());
+    public void onMenuClose(InventoryCloseEvent event) {
+        if (!event.getView().title().toString().equals(MM.deserialize("<dark_green>ATM | Insert Card").toString()))
+            return;
+        Inventory inventory = event.getInventory();
+        ItemStack inputItem = inventory.getItem(4);
+        if (inputItem != null && !inputItem.getType().equals(Material.AIR))
+            event.getPlayer().getInventory().addItem(inputItem);
+        cardTarget.remove(event.getPlayer().getName());
     }
 
-    public void itemInputProcess(Inventory inventory, Player player)
-    {
+    public void itemInputProcess(Inventory inventory, Player player) {
         ItemStack inputItem = inventory.getItem(4);
-
         if (inputItem == null || inputItem.getType().equals(Material.AIR))
             return;
-
         player.getInventory().addItem(inputItem);
         inventory.setItem(4, null);
-
         if (inputItem.getType().equals(Material.NAME_TAG) &&
-                Objects.requireNonNull(inputItem.getItemMeta()).hasLore())
-        {
-            String cardID = ChatColor.stripColor(Objects.requireNonNull(inputItem.getItemMeta().getLore()).get(0));
-                                // remove any format & colour
-
+                inputItem.getItemMeta() != null &&
+                inputItem.getItemMeta().hasLore()) {
+            String cardID = Objects.requireNonNull(inputItem.getItemMeta().lore()).get(0).toString().replaceAll("§.", "");
             List<Integer> cardDigits = new ArrayList<>();
-
-            for (char s: cardID.toCharArray())
-            {
-                if (Character.isDigit(s))
-                {
+            for (char s : cardID.toCharArray()) {
+                if (Character.isDigit(s)) {
                     cardDigits.add(Character.getNumericValue(s));
                 }
             }
-
-            if (cardDigits.size() == 16 && cardDigits.get(0) == 5)
-            {
+            if (cardDigits.size() == 16 && cardDigits.get(0) == 5) {
                 cardDigits.clear();
-                cardDigits = null;
-
-                try
-                {
+                try {
                     String getCardOwner = new SylvBankDBTasks(connection).getPlayerNameByCard(cardID);
-
-                    if (getCardOwner == null)
-                    {
-                        player.sendMessage(ChatColor.RED + "Invalid card.");
+                    if (getCardOwner == null) {
+                        player.sendMessage(MM.deserialize("<red>Invalid card."));
                         return;
                     }
-
-                    new SylvATMGUIOpener("ATM | Operations", player).openATMOperationsMenu();
+                    new SylvATMGUIOpener("<dark_green>ATM | Operations", player).openATMOperationsMenu();
                     cardTarget.put(player.getName(), getCardOwner);
-                }
-                catch (SQLException error)
-                {
-                    player.sendMessage(ChatColor.RED + "An error occurred, ATM operations cannot be performed.");
-                }
-                finally
-                {
+                } catch (SQLException error) {
+                    player.sendMessage(MM.deserialize("<red>An error occurred, ATM operations cannot be performed."));
+                } finally {
                     SylvDBConnect.releaseConnection(connection);
                 }
+            } else {
+                player.sendMessage(MM.deserialize("<red>Invalid card details."));
             }
-
-            else
-            {
-                player.sendMessage(ChatColor.RED + "Invalid card details.");
-            }
-        }
-
-        else
-        {
-            player.sendMessage(ChatColor.RED + "Invalid item.");
+        } else {
+            player.sendMessage(MM.deserialize("<red>Invalid item."));
         }
     }
 }
