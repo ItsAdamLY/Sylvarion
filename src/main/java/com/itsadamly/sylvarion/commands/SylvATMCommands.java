@@ -122,7 +122,7 @@ public class SylvATMCommands implements CommandExecutor {
     }
 
     private void handleOpenAccount(CommandSender sender, String[] args) {
-        Player player = null;
+        Player player;
 
         if (args.length == 1) {
             if (!(sender instanceof Player)) {
