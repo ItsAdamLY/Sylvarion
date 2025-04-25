@@ -29,6 +29,12 @@ public class SylvATMOperations {
         this.connection = sqlConnection;
     }
 
+    /**
+     * Inserts an account to SQL (for command use)
+     * @param sender Command sender
+     * @param targetPlayer Command executor (the one who opens the account)
+     * @throws SQLException if SQL error occurs
+     */
     public void openAccount(CommandSender sender, Player targetPlayer) throws SQLException {
         try {
             boolean isUserExist = new SylvBankDBTasks(connection).isUserInDB(targetPlayer.getName());
@@ -59,6 +65,12 @@ public class SylvATMOperations {
         }
     }
 
+    /**
+     * Removes account entry in SQL (for command use)
+     * @param commandSender - Command sender
+     * @param targetName - Command executor
+     * @throws SQLException if SQL error orrurs
+     */
     public void closeAccount(CommandSender commandSender, String targetName) throws SQLException {
         try (connection) {
             boolean isUserExist = new SylvBankDBTasks(connection).isUserInDB(targetName);
@@ -89,6 +101,14 @@ public class SylvATMOperations {
         }
     }
 
+    /**
+     * Deposits amount of money to specified account (for command use)
+     * @param commandSender {@link CommandSender} - Command Sender
+     * @param targetName {@link String} - Command executor in string
+     * @param amount double - Amount to deposit
+     * @return boolean - success or not
+     * @throws SQLException if SQL error occurs
+     */
     public boolean deposit(CommandSender commandSender, String targetName, double amount) throws SQLException {
         try (connection) {
             boolean isUserExist = new SylvBankDBTasks(connection).isUserInDB(targetName);
@@ -128,6 +148,14 @@ public class SylvATMOperations {
         return false;
     }
 
+    /**
+     * Withdraw (remove) money from specified account (for command use)
+     * @param commandSender - Command sender
+     * @param targetName - Command executor
+     * @param amount - amount of money to withdraw
+     * @return boolean - success or not
+     * @throws SQLException if SQL error occurs
+     */
     public boolean withdraw(CommandSender commandSender, String targetName, double amount) throws SQLException {
         try (connection) {
             boolean isUserExist = new SylvBankDBTasks(connection).isUserInDB(targetName);
@@ -169,6 +197,13 @@ public class SylvATMOperations {
         return false;
     }
 
+    /**
+     * Gets username of player refered in command
+     * @param commandSender - sender instance
+     * @param args - <code>onCommand</code> command args
+     * @return {@link String} - the username
+     * @throws NullPointerException idk, go ask @ItsAdamLY
+     */
     public String getUsername(CommandSender commandSender, String[] args) throws NullPointerException {
         String username = null;
 
