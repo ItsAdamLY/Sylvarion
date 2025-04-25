@@ -175,6 +175,20 @@ public class SylvBankDBTasks
         // ─ Used to move the cursor to the next row, and check if the data exists & matches
     }
 
+    public String getUsername(String cardId) throws SQLException
+    {
+        PreparedStatement stmt = connectionSQL.prepareStatement(
+            "SELECT Name FROM " + SylvDBDetails.getDBUserTableName() + " WHERE CardID = ?"
+        );
+
+        stmt.setString(1, cardId);
+        ResultSet result = stmt.executeQuery();
+
+        return result.next() ? result.getString(1) : null;
+        // if (result.next()) return result.getString(1);
+        // ─ Used to move the cursor to the next row, and check if the data exists & matches
+    }
+
     public double getCardBalance(String playerName) throws SQLException
     {
         PreparedStatement stmt = connectionSQL.prepareStatement(
