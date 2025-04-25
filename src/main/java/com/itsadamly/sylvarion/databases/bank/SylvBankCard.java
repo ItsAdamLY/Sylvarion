@@ -21,6 +21,8 @@ public class SylvBankCard
         assert cardMeta != null;
         cardMeta.setDisplayName(playerName + "'s Bank Card");
 
+        cardDetails.add("Sylvarion");  // Iciwi compatibility
+
         cardDetails.add(ChatColor.GRAY + "§o" + cardCode);
 
         cardDetails.add(ChatColor.RED + "MAST" + ChatColor.GOLD + "ER" + ChatColor.YELLOW + "CARD");
