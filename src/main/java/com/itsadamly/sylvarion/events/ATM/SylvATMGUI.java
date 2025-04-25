@@ -46,12 +46,12 @@ public class SylvATMGUI
             add("§oOpen your account.");
         }});
 
-        ItemStack close = atmMenuElement(Material.REDSTONE_BLOCK, ChatColor.RED + "Close", new ArrayList<>() {{
-            add("§oClose your account.");
-        }});
-
         ItemStack card = atmMenuElement(Material.NAME_TAG, ChatColor.YELLOW + "Card", new ArrayList<>() {{
             add("§oCheck your card.");
+        }});
+
+        ItemStack close = atmMenuElement(Material.REDSTONE_BLOCK, ChatColor.RED + "Close", new ArrayList<>() {{
+            add("§oClose your account.");
         }});
 
         atmGUI.setItem(1, open);
