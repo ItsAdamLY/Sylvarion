@@ -10,3 +10,5 @@ commands:
 
 depend:
   - Vault
+softdepend:
+  - Iciwi
