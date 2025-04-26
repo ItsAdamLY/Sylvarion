@@ -1,9 +1,10 @@
 package com.itsadamly.sylvarion;
 
 import com.itsadamly.sylvarion.commands.SylvATMCommands;
-import com.itsadamly.sylvarion.commands.tabcomplete.SylvATMTabComplete;
 import com.itsadamly.sylvarion.databases.SylvDBConnect;
 import com.itsadamly.sylvarion.events.InteractATM;
+
+import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.ChatColor;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -25,8 +26,9 @@ public class Sylvarion extends JavaPlugin
     {
         pluginInstance = this;
 
-        getCommand("atm").setExecutor(new SylvATMCommands());
-        getCommand("atm").setTabCompleter(new SylvATMTabComplete());
+        this.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, commands -> {
+            commands.registrar().register(SylvATMCommands.command); 
+        });
 
         //getServer().getPluginManager().registerEvents(new SylvATMGUI(), this);
         getServer().getPluginManager().registerEvents(new InteractATM(), this);
