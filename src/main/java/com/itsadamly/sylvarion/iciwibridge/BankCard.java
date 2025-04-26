@@ -31,7 +31,7 @@ public BankCard (ItemStack item)
 @Override
 public boolean withdraw (double v) {
 	try {
-		String username = bankTasks.getUsername(this.serial);
+		String username = bankTasks.getPlayerNameByCard(this.serial);
 		bankTasks.setCardBalance(username, "subtract", v);
 		return true;
 	} catch (SQLException e) {
