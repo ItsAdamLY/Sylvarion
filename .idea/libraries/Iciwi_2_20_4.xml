@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="Iciwi-2.20.4">
-    <CLASSES>
-      <root url="jar://$PROJECT_DIR$/../iciwi/build/libs/Iciwi-2.20.4.jar!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>

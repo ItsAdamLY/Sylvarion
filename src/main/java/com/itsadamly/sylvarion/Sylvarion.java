@@ -4,6 +4,8 @@ import com.itsadamly.sylvarion.commands.SylvATMCommands;
 import com.itsadamly.sylvarion.commands.tabcomplete.SylvATMTabComplete;
 import com.itsadamly.sylvarion.databases.SylvDBConnect;
 import com.itsadamly.sylvarion.events.InteractATM;
+import com.itsadamly.sylvarion.iciwibridge.BankCard;
+import mikeshafter.iciwi.api.IciwiPlugin;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -62,7 +64,7 @@ public class Sylvarion extends JavaPlugin
 
         if (Bukkit.getServer().getPluginManager().getPlugin("Iciwi") != null)
         {
-            // Plugin exists
+            IciwiPlugin.registerCard("Sylvarion", BankCard.class);
         }
     }
 
