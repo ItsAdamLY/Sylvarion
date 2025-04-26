@@ -6,7 +6,8 @@ api-version: 1.17
 commands:
   atm:
     description: Everything about Sylvarion ATM
-    usage: "\n/<command> (open|close|checkbalance|getCard) [player]\n/<command> (deposit|withdraw) [player] <amount> \n/<command> updateBalance <players> (add|subtract|set) <amount>\n/<command> reload"
+    usage: "\n/<command> reload\n/<command> open [<player>]\n/<command> close [<player>]\n/<command> checkbalance [<player>]\n/<command> updatebalance <players> (set|add|remove)\n/<command> deposit <player> <amount>\n/<command> withdraw <player> <amount>"
+
 
 depend:
   - Vault
