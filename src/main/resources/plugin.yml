@@ -6,7 +6,15 @@ api-version: 1.17
 commands:
   atm:
     description: Everything about Sylvarion ATM
-    usage: "/<command> <open|close|checkBalance|getCard> [player]\n/<command> <updateBalance> <name> <add|subtract|set> <amount>\n/<command> reload"
+    usage: "\n/<command> (open|close|checkbalance|getCard) [player]\n/<command> (deposit|withdraw) [player] <amount> \n/<command> updateBalance <players> (add|subtract|set) <amount>\n/<command> reload"
 
 depend:
   - Vault
+
+permissions:
+sylv.atm: 
+  description: "idk"
+  default: notop
+sylv.atm.admin:
+  description: "select other players in /atm command"
+  default: op
