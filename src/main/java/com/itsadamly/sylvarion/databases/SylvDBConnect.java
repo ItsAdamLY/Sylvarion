@@ -7,34 +7,63 @@ import org.bukkit.scheduler.BukkitRunnable;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 
-public class SylvDBConnect
-{
-    private static Connection connection = null;
+public class SylvDBConnect {
+
     private static final Sylvarion pluginInstance = Sylvarion.getInstance();
+    private static final int POOL_SIZE = 10;
+    private static final List<Connection> connections = new ArrayList<>(POOL_SIZE);
 
-    public void sqlConnect() throws SQLException
-    {
-        String URL = SylvDBDetails.getDBPath();
-        String dbName = SylvDBDetails.getDBName();
-        String userName = SylvDBDetails.getDBUserName();
-        String password = SylvDBDetails.getDBPassword();
-        String driver = SylvDBDetails.getDriver();
+    private static Connection sqlConnect() throws SQLException {
+        String url = "jdbc:" + SylvDBDetails.getDriver() + "://" +
+                SylvDBDetails.getDBPath() + "/" + SylvDBDetails.getDBName() +
+                "?autoReconnect=true";
 
-        connection = DriverManager.getConnection("jdbc:" + driver + "://" + URL + "/" + dbName + "?autoReconnect=true", userName, password);
-        pluginInstance.getServer().getLogger().log(Level.FINEST, "Database " + dbName + " loaded" +
-                " successfully!");
+        Connection connection = DriverManager.getConnection(
+                url,
+                SylvDBDetails.getDBUserName(),
+                SylvDBDetails.getDBPassword()
+        );
 
-        new SylvBankDBTasks().createTables();
-    }
-
-    public static Connection getSQLConnection()
-    {
+        new SylvBankDBTasks(connection).createTables();
         return connection;
     }
 
-    public void checkConnection()
+/*    public static void sqlDisconnect(Connection connection)
+    {
+        if (connection == null) return;
+
+        try
+        {
+            connection.close();
+            pluginInstance.getServer().getLogger().log(Level.FINEST, "Database connection closed.");
+        }
+        catch (SQLException error)
+        {
+            pluginInstance.getServer().getLogger().log(Level.SEVERE, "An error occurred whilst terminating the database connection.", error);
+        }
+    }*/
+
+    public static Connection getConnection() throws SQLException {
+        if (connections.isEmpty()) {
+            for (int i = 0; i < POOL_SIZE; i++) {
+                connections.add(sqlConnect());
+            }
+        }
+
+        return connections.remove(connections.size() - 1);
+    }
+
+    public static void releaseConnection(Connection connection) {
+        if (connection != null) {
+            connections.add(connection);
+        }
+    }
+
+/*    public void checkConnection()
     {
         new BukkitRunnable()
         {
@@ -50,10 +79,9 @@ public class SylvDBConnect
                 }
                 catch (SQLException error)
                 {
-                     pluginInstance.getLogger().log(Level.SEVERE, "An error occurred whilst reconnecting to the database.");
-                     pluginInstance.getLogger().log(Level.WARNING, error.getMessage());
+                     pluginInstance.getLogger().log(Level.SEVERE, "An error occurred whilst reconnecting to the database.", error);
                 }
             }
         }.runTaskTimer(pluginInstance, 0, 20*60*60);
-    }
+    }*/
 }

@@ -1,11 +1,12 @@
 package com.itsadamly.sylvarion;
 
 import com.itsadamly.sylvarion.commands.SylvATMCommands;
-import com.itsadamly.sylvarion.commands.tabcomplete.SylvATMTabComplete;
 import com.itsadamly.sylvarion.databases.SylvDBConnect;
 import com.itsadamly.sylvarion.events.InteractATM;
 import com.itsadamly.sylvarion.iciwibridge.BankCard;
 import mikeshafter.iciwi.api.IciwiPlugin;
+
+import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -13,6 +14,7 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.UnknownDependencyException;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 
 import java.util.logging.Level;
@@ -26,19 +28,20 @@ public class Sylvarion extends JavaPlugin
     public void onEnable()
     {
         pluginInstance = this;
-        getCommand("atm").setExecutor(new SylvATMCommands());
-        getCommand("atm").setTabCompleter(new SylvATMTabComplete());
+
+        this.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, commands -> {
+            commands.registrar().register(SylvATMCommands.command);
+        });
 
         //getServer().getPluginManager().registerEvents(new SylvATMGUI(), this);
         getServer().getPluginManager().registerEvents(new InteractATM(), this);
         getConfig().options().copyDefaults(true);
         saveDefaultConfig();
 
+        // to create new table if not exist
         try
         {
-            // to create new table if not exist
-            new SylvDBConnect().sqlConnect();
-            new SylvDBConnect().checkConnection();
+            SylvDBConnect.getConnection();
             setupEconomy();
         }
         catch (SQLException error)

@@ -1,7 +1,6 @@
 package com.itsadamly.sylvarion.databases.bank;
 
 import com.itsadamly.sylvarion.Sylvarion;
-import com.itsadamly.sylvarion.databases.SylvDBConnect;
 import com.itsadamly.sylvarion.databases.SylvDBDetails;
 import org.bukkit.entity.Player;
 
@@ -15,7 +14,12 @@ import java.util.List;
 public class SylvBankDBTasks
 {
     private final Sylvarion pluginInstance = Sylvarion.getInstance();
-    private final Connection connectionSQL = SylvDBConnect.getSQLConnection();
+    private final Connection connectionSQL;
+
+    public SylvBankDBTasks(Connection connection)
+    {
+        this.connectionSQL = connection;
+    }
 
     public void createTables() throws SQLException
     {
@@ -31,7 +35,7 @@ public class SylvBankDBTasks
         );
         userTableStmt.executeUpdate();
 
-        /*PreparedStatement terminalTableStmt = connectionSQL.prepareStatement(
+/*        PreparedStatement terminalTableStmt = connectionSQL.prepareStatement(
             "CREATE TABLE IF NOT EXISTS " + SylvDBDetails.getDBTerminalTableName() + "(" + 
                 "ID INT NOT NULL AUTO_INCREMENT," + 
                 "CoordX INT NOT NULL," + 
@@ -43,7 +47,7 @@ public class SylvBankDBTasks
                 "PRIMARY KEY (ID)" + 
             ")"
         ); 
-        terminalTableStmt.executeUpdate(); */
+        terminalTableStmt.executeUpdate();*/
     }
 
     public void createProcedures() throws SQLException
@@ -171,14 +175,14 @@ public class SylvBankDBTasks
         ResultSet result = stmt.executeQuery();
 
         return result.next() ? result.getString(1) : null;
-        // if (result.next()) return result.getString(1);
+        // if (result.next()) return result.getString(1); return null;
         // ─ Used to move the cursor to the next row, and check if the data exists & matches
     }
 
     public String getPlayerNameByCard(String code) throws SQLException
     {
         PreparedStatement stmt = connectionSQL.prepareStatement(
-            "SELECT Name FROM " + SylvDBDetails.getDBUserTableName() + " WHERE CardID = ?"
+                "SELECT Name FROM " + SylvDBDetails.getDBUserTableName() + " WHERE CardID = ?"
         );
 
         stmt.setString(1, code);
@@ -223,6 +227,7 @@ public class SylvBankDBTasks
         stmt.executeUpdate();
     }
 
+    // will be used
     public void payUser (String srcPlayeruuid, String targetPlayeruuid, float amount) throws SQLException
     {
         PreparedStatement stmt = connectionSQL.prepareStatement(
@@ -286,4 +291,6 @@ public class SylvBankDBTasks
 }
 
 // Authentication for payments/transfers - IceKing
-//
+// Loan/Mortgage system for houses and plots - Cherry and JC
+
+// Message from Akis - I'm not even gonna touch this one, I don't wanna break stuff :pray:

@@ -12,3 +12,11 @@ depend:
   - Vault
 softdepend:
   - Iciwi
+
+permissions:
+sylv.atm:
+  description: "idk"
+  default: notop
+sylv.atm.admin:
+  description: "select other players in /atm command"
+  default: op

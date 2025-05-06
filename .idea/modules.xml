@@ -2,8 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/Sylvarion.iml" filepath="$PROJECT_DIR$/Sylvarion.iml" />
-      <module fileurl="file://$PROJECT_DIR$/com.ItsAdamLY.iml" filepath="$PROJECT_DIR$/com.ItsAdamLY.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/Sylvarion.iml" filepath="$PROJECT_DIR$/.idea/Sylvarion.iml" />
     </modules>
   </component>
 </project>
