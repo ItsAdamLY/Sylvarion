@@ -23,6 +23,7 @@ public class SylvBankCard {
             meta.displayName(MM.deserialize(playerName + "'s Bank Card"));
 
             List<Component> lore = new ArrayList<>();
+            lore.add("Sylvarion");
             lore.add(MM.deserialize("<gray><i>" + cardCode));
             lore.add(MM.deserialize("<gradient:#EB001B:yellow>MASTERCARD</gradient>"));
 
