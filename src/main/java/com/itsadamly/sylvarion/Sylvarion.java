@@ -3,9 +3,12 @@ package com.itsadamly.sylvarion;
 import com.itsadamly.sylvarion.commands.SylvATMCommands;
 import com.itsadamly.sylvarion.databases.SylvDBConnect;
 import com.itsadamly.sylvarion.events.InteractATM;
+import com.itsadamly.sylvarion.iciwibridge.BankCard;
+import mikeshafter.iciwi.api.IciwiPlugin;
 
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import net.milkbowl.vault.economy.Economy;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.UnknownDependencyException;
@@ -27,7 +30,7 @@ public class Sylvarion extends JavaPlugin
         pluginInstance = this;
 
         this.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, commands -> {
-            commands.registrar().register(SylvATMCommands.command); 
+            commands.registrar().register(SylvATMCommands.command);
         });
 
         //getServer().getPluginManager().registerEvents(new SylvATMGUI(), this);
@@ -60,6 +63,11 @@ public class Sylvarion extends JavaPlugin
                 getServer().getLogger().log(Level.WARNING, element.toString());
 
             getServer().getPluginManager().disablePlugin(this);
+        }
+
+        if (Bukkit.getServer().getPluginManager().getPlugin("Iciwi") != null)
+        {
+            IciwiPlugin.registerCard("Sylvarion", BankCard.class);
         }
     }
 

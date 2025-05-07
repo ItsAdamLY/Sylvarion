@@ -77,6 +77,13 @@
           <version>1.7.1</version>
           <scope>provided</scope>
       </dependency>
+      <dependency>
+          <groupId>com.github.Limaru-Minecraft</groupId>
+          <artifactId>iciwi</artifactId>
+          <version>a052a65</version>
+          <scope>provided</scope>
+<!--          <systemPath>/Users/mikeshafteure/Documents/GitHub/iciwi/build/libs/Iciwi-2.20.4.jar</systemPath>-->
+      </dependency>
 <!--      <dependency>-->
 <!--          <groupId>mysql</groupId>-->
 <!--          <artifactId>mysql-connector-java</artifactId>-->
