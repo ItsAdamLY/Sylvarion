@@ -35,7 +35,7 @@ public class SylvDBConnect
                 System.out.println("File created: " + newDBFile.getName());
             }
 
-            String url = "jdbc:" + driver + ":" + pluginFileDir + "/" + SylvDBDetails.getDBName();
+            String url = "jdbc:" + driver + ":" + newDBFile.getPath();
             connection = DriverManager.getConnection(url);
         }
 
