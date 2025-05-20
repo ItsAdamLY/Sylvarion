@@ -4,10 +4,7 @@ import com.itsadamly.sylvarion.Sylvarion;
 import com.itsadamly.sylvarion.databases.SylvDBDetails;
 import org.bukkit.entity.Player;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,16 +20,38 @@ public class SylvBankDBTasks
 
     public void createTables() throws SQLException
     {
-        PreparedStatement userTableStmt = connectionSQL.prepareStatement(
-                "CREATE TABLE IF NOT EXISTS " + SylvDBDetails.getDBUserTableName() + "(" +
-                        "ID INT NOT NULL AUTO_INCREMENT," +
-                        "Name VARCHAR(100)," +
-                        "UUID VARCHAR(100)," +
-                        "CardID VARCHAR(20)," +
-                        "Balance DECIMAL(10, 2)," +
-                        "PRIMARY KEY (ID)" +
-                ")"
-        );
+        DatabaseMetaData dbMeta = connectionSQL.getMetaData();
+        PreparedStatement userTableStmt;
+
+        if (dbMeta.getDatabaseProductName().equalsIgnoreCase("mysql"))
+        {
+            userTableStmt = connectionSQL.prepareStatement(
+                    "CREATE TABLE IF NOT EXISTS " + SylvDBDetails.getDBUserTableName() + "(" +
+                            "ID INT NOT NULL AUTO_INCREMENT," +
+                            "Name VARCHAR(100)," +
+                            "UUID VARCHAR(100)," +
+                            "CardID VARCHAR(20)," +
+                            "Balance DECIMAL(10, 2)," +
+                            "PRIMARY KEY (ID)" +
+                    ")"
+            );
+        }
+        else
+        {
+            if (!dbMeta.getDatabaseProductName().equalsIgnoreCase("sqlite"))
+                throw new SQLException("Database type not supported. Please use MySQL or SQLite.");
+
+            userTableStmt = connectionSQL.prepareStatement(
+                    "CREATE TABLE IF NOT EXISTS " + SylvDBDetails.getDBUserTableName() + "(" +
+                            "ID INTEGER PRIMARY KEY AUTOINCREMENT," +
+                            "Name TEXT," +
+                            "UUID TEXT," +
+                            "CardID TEXT," +
+                            "Balance REAL" +
+                    ")"
+            );
+        }
+
         userTableStmt.executeUpdate();
 
 /*        PreparedStatement terminalTableStmt = connectionSQL.prepareStatement(

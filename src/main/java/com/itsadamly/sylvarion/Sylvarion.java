@@ -4,9 +4,8 @@ import com.itsadamly.sylvarion.commands.SylvATMCommands;
 import com.itsadamly.sylvarion.databases.SylvDBConnect;
 import com.itsadamly.sylvarion.events.InteractATM;
 import com.itsadamly.sylvarion.iciwibridge.BankCard;
-import mikeshafter.iciwi.api.IciwiPlugin;
-
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
+import mikeshafter.iciwi.api.IciwiPlugin;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -14,9 +13,8 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.UnknownDependencyException;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.sql.Connection;
+import java.io.IOException;
 import java.sql.SQLException;
-
 import java.util.logging.Level;
 
 public class Sylvarion extends JavaPlugin
@@ -41,10 +39,10 @@ public class Sylvarion extends JavaPlugin
         // to create new table if not exist
         try
         {
-            SylvDBConnect.getConnection();
+            SylvDBConnect.sqlConnect("sqlite");
             setupEconomy();
         }
-        catch (SQLException error)
+        catch (SQLException | IOException error)
         {
             getServer().getLogger().log(Level.SEVERE, "Cannot connect to database. Make sure the DB details are correct.");
             getServer().getLogger().log(Level.WARNING, error.getMessage());

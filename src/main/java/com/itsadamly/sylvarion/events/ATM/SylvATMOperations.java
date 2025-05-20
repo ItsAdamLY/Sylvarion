@@ -72,7 +72,7 @@ public class SylvATMOperations {
      * @throws SQLException if SQL error orrurs
      */
     public void closeAccount(CommandSender commandSender, String targetName) throws SQLException {
-        try (connection) {
+        try {
             boolean isUserExist = new SylvBankDBTasks(connection).isUserInDB(targetName);
 
             if (!isUserExist) {
@@ -110,7 +110,7 @@ public class SylvATMOperations {
      * @throws SQLException if SQL error occurs
      */
     public boolean deposit(CommandSender commandSender, String targetName, double amount) throws SQLException {
-        try (connection) {
+        try {
             boolean isUserExist = new SylvBankDBTasks(connection).isUserInDB(targetName);
 
             if (!isUserExist) {
@@ -157,7 +157,7 @@ public class SylvATMOperations {
      * @throws SQLException if SQL error occurs
      */
     public boolean withdraw(CommandSender commandSender, String targetName, double amount) throws SQLException {
-        try (connection) {
+        try {
             boolean isUserExist = new SylvBankDBTasks(connection).isUserInDB(targetName);
 
             if (!isUserExist) {

@@ -2,34 +2,51 @@ package com.itsadamly.sylvarion.databases;
 
 import com.itsadamly.sylvarion.Sylvarion;
 import com.itsadamly.sylvarion.databases.bank.SylvBankDBTasks;
-import org.bukkit.scheduler.BukkitRunnable;
 
+import java.io.File;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Level;
 
-public class SylvDBConnect {
-
+public class SylvDBConnect
+{
     private static final Sylvarion pluginInstance = Sylvarion.getInstance();
     private static final int POOL_SIZE = 10;
-    private static final List<Connection> connections = new ArrayList<>(POOL_SIZE);
+    //private static final List<Connection> connections = new ArrayList<>(POOL_SIZE);
 
-    private static Connection sqlConnect() throws SQLException {
-        String url = "jdbc:" + SylvDBDetails.getDriver() + "://" +
-                SylvDBDetails.getDBPath() + "/" + SylvDBDetails.getDBName() +
-                "?autoReconnect=true";
+    private static Connection connection = null;
 
-        Connection connection = DriverManager.getConnection(
-                url,
-                SylvDBDetails.getDBUserName(),
-                SylvDBDetails.getDBPassword()
-        );
+    public static void sqlConnect(String driver) throws SQLException, IOException
+    {
+        if (!driver.equalsIgnoreCase("sqlite") && !driver.equalsIgnoreCase("mysql"))
+        {
+            throw new SQLException("Unsupported database driver: " + driver + " (yet). Please use SQLite.");
+        }
 
+        if (driver.equalsIgnoreCase("sqlite"))
+        {
+            String dbName = SylvDBDetails.getDBName();
+            File pluginFileDir = pluginInstance.getDataFolder();
+            File newDBFile = new File(pluginFileDir, dbName + ".db");
+
+            if (newDBFile.createNewFile()) {
+                System.out.println("File created: " + newDBFile.getName());
+            }
+
+            String url = "jdbc:" + driver + ":" + pluginFileDir + "/" + SylvDBDetails.getDBName();
+            connection = DriverManager.getConnection(url);
+        }
+
+        else
+        {
+            String url = "jdbc:" + driver + "://" + SylvDBDetails.getDBPath() + "/" + SylvDBDetails.getDBName() + "?autoReconnect=true&connectionTimeout=10000";
+            connection = DriverManager.getConnection(url, SylvDBDetails.getDBUserName(), SylvDBDetails.getDBPassword());
+        }
+
+        connection.setAutoCommit(true);
         new SylvBankDBTasks(connection).createTables();
-        return connection;
     }
 
 /*    public static void sqlDisconnect(Connection connection)
@@ -47,41 +64,29 @@ public class SylvDBConnect {
         }
     }*/
 
-    public static Connection getConnection() throws SQLException {
-        if (connections.isEmpty()) {
+    public static Connection getConnection() throws SQLException
+    {
+        /*if (connections.isEmpty()) {
             for (int i = 0; i < POOL_SIZE; i++) {
                 connections.add(sqlConnect());
             }
-        }
+        }*/
 
-        return connections.remove(connections.size() - 1);
+        return connection;
     }
 
-    public static void releaseConnection(Connection connection) {
-        if (connection != null) {
-            connections.add(connection);
-        }
-    }
-
-/*    public void checkConnection()
+    public static void sqlDisconnect()
     {
-        new BukkitRunnable()
+        if (connection == null) return;
+
+        try
         {
-            @Override
-            public void run()
-            {
-                try
-                {
-                    if (connection.isClosed())
-                    {
-                        sqlConnect();
-                    }
-                }
-                catch (SQLException error)
-                {
-                     pluginInstance.getLogger().log(Level.SEVERE, "An error occurred whilst reconnecting to the database.", error);
-                }
-            }
-        }.runTaskTimer(pluginInstance, 0, 20*60*60);
-    }*/
+            connection.close();
+            pluginInstance.getServer().getLogger().log(Level.FINEST, "Database connection closed.");
+        }
+        catch (SQLException error)
+        {
+            pluginInstance.getServer().getLogger().log(Level.SEVERE, "An error occurred whilst terminating the database connection.", error);
+        }
+    }
 }

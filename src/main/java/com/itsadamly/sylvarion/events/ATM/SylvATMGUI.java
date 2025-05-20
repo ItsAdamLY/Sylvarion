@@ -2,7 +2,6 @@ package com.itsadamly.sylvarion.events.ATM;
 
 import com.itsadamly.sylvarion.databases.SylvDBDetails;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -14,23 +13,26 @@ import org.bukkit.inventory.meta.ItemMeta;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SylvATMGUI {
+public class SylvATMGUI
+{
     private static final MiniMessage MM = MiniMessage.miniMessage();
     private static final String CURRENCY = SylvDBDetails.getCurrencySymbol();
 
-    protected final Inventory atmGUI;
+    protected Inventory atmGUI;
     protected final Player player;
 
-    public SylvATMGUI(Component title, Player player) {
-        this.atmGUI = Bukkit.createInventory(null, 9, title);
+    public SylvATMGUI(Player player)
+    {
         this.player = player;
     }
 
-    protected static ItemStack atmMenuElement(Material material, Component itemName, List<Component> description) {
+    protected static ItemStack atmMenuElement(Material material, Component itemName, List<Component> description)
+    {
         ItemStack elementItem = new ItemStack(material);
         ItemMeta elementMeta = elementItem.getItemMeta();
 
-        if (elementMeta != null) {
+        if (elementMeta != null)
+        {
             elementMeta.displayName(itemName);
             elementMeta.lore(description);
             elementItem.setItemMeta(elementMeta);
@@ -39,7 +41,10 @@ public class SylvATMGUI {
         return elementItem;
     }
 
-    protected Inventory atmMenu() {
+    protected Inventory atmMenu()
+    {
+        atmGUI = Bukkit.createInventory(player, 9, MM.deserialize("<dark_green>ATM"));
+
         ItemStack open = atmMenuElement(
                 Material.GOLD_BLOCK,
                 MM.deserialize("<green>Open"),
@@ -65,7 +70,10 @@ public class SylvATMGUI {
         return atmGUI;
     }
 
-    protected Inventory testMenu() {
+    protected Inventory testMenu()
+    {
+        atmGUI = Bukkit.createInventory(player, 9, MM.deserialize("<dark_green>ATM | Test"));
+
         ItemStack test = atmMenuElement(
                 Material.DIAMOND,
                 MM.deserialize("<yellow>Test"),
@@ -76,23 +84,29 @@ public class SylvATMGUI {
         return atmGUI;
     }
 
-    protected Inventory inputCardMenu() {
+    protected Inventory inputCardMenu()
+    {
+        atmGUI = Bukkit.createInventory(player, 9, MM.deserialize("<dark_green>ATM | Insert Card"));
+
         ItemStack glass = atmMenuElement(
                 Material.BLACK_STAINED_GLASS_PANE,
                 Component.empty(),
                 new ArrayList<>()
         );
 
-        for (int i = 0; i < 9; i++) {
-            if (i != 4) {
+        for (int i = 0; i < 9; i++)
+        {
+            if (i != 4)
                 atmGUI.setItem(i, glass);
-            }
         }
 
         return atmGUI;
     }
 
-    protected Inventory valuesMenu() {
+    protected Inventory valuesMenu(Component title)
+    {
+        atmGUI = Bukkit.createInventory(player, 9, title);
+
         double[] values = {10.00, 20.00, 50.00, 100.00, 200.00, 500.00, 1000.00};
 
         ItemStack back = atmMenuElement(
@@ -129,7 +143,10 @@ public class SylvATMGUI {
         return atmGUI;
     }
 
-    protected Inventory confirmMenu() {
+    protected Inventory confirmMenu(Component title)
+    {
+        atmGUI = Bukkit.createInventory(player, 9, title);
+
         ItemStack yes = atmMenuElement(
                 Material.GREEN_TERRACOTTA,
                 MM.deserialize("<green>Yes"),
@@ -148,7 +165,10 @@ public class SylvATMGUI {
         return atmGUI;
     }
 
-    protected Inventory atmOperationsMenu() {
+    protected Inventory atmOperationsMenu()
+    {
+        atmGUI = Bukkit.createInventory(player, 9, MM.deserialize("<dark_green>ATM | Operations"));
+
         ItemStack deposit = atmMenuElement(
                 Material.DIAMOND_BLOCK,
                 MM.deserialize("<yellow>Deposit"),
