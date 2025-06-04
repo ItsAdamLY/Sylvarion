@@ -1,14 +1,13 @@
 package com.itsadamly.sylvarion;
 
-import com.itsadamly.sylvarion.commands.SylvATMCommands;
+import com.itsadamly.sylvarion.bank.commands.SylvATMCommands;
 import com.itsadamly.sylvarion.databases.SylvDBConnect;
-import com.itsadamly.sylvarion.events.InteractATM;
-import com.itsadamly.sylvarion.iciwibridge.BankCard;
+import com.itsadamly.sylvarion.bank.events.InteractATM;
+import com.itsadamly.sylvarion.bank.iciwibridge.BankCard;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import mikeshafter.iciwi.api.IciwiPlugin;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.UnknownDependencyException;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -63,6 +62,7 @@ public class Sylvarion extends JavaPlugin
             getServer().getPluginManager().disablePlugin(this);
         }
 
+        // check for ICIWI dependency and register this plugin as a card provider
         if (Bukkit.getServer().getPluginManager().getPlugin("Iciwi") != null)
         {
             IciwiPlugin.registerCard("Sylvarion", BankCard.class);
@@ -75,7 +75,7 @@ public class Sylvarion extends JavaPlugin
 
         if (economyRSP == null)
         {
-            throw new UnknownDependencyException(ChatColor.RED + "No Economy plugin found.");
+            throw new UnknownDependencyException("No Economy plugin found.");
         }
 
         economy = economyRSP.getProvider();

@@ -1,12 +1,9 @@
-package com.itsadamly.sylvarion.events;
+package com.itsadamly.sylvarion.bank.events;
 
 import com.itsadamly.sylvarion.Sylvarion;
 import com.itsadamly.sylvarion.databases.SylvDBConnect;
 import com.itsadamly.sylvarion.databases.SylvDBDetails;
 import com.itsadamly.sylvarion.databases.bank.SylvBankDBTasks;
-import com.itsadamly.sylvarion.events.ATM.SylvATM;
-import com.itsadamly.sylvarion.events.ATM.SylvATMOperations;
-import com.itsadamly.sylvarion.events.ATM.SylvATMSigns;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;

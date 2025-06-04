@@ -1,4 +1,4 @@
-package com.itsadamly.sylvarion.commands;
+package com.itsadamly.sylvarion.bank.commands;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -17,7 +17,7 @@ import com.itsadamly.sylvarion.databases.SylvDBConnect;
 import com.itsadamly.sylvarion.databases.SylvDBDetails;
 import com.itsadamly.sylvarion.databases.bank.SylvBankCard;
 import com.itsadamly.sylvarion.databases.bank.SylvBankDBTasks;
-import com.itsadamly.sylvarion.events.ATM.SylvATMOperations;
+import com.itsadamly.sylvarion.bank.events.SylvATMOperations;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
@@ -29,10 +29,6 @@ import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
 import io.papermc.paper.command.brigadier.argument.resolvers.selector.PlayerSelectorArgumentResolver;
-
-// TODO: Someone help
-// it randomly throws [23:44:35 WARN]: [Sylvarion] No operations allowed after connection closed.
-// after running for a while
 
 public class SylvATMCommands {
     // This Class only handles /atm commands
@@ -158,7 +154,7 @@ public class SylvATMCommands {
                 .resolve(ctx.getSource())
                 .get(0); 
         } catch (IllegalArgumentException e) {
-            pluginInstance.getLogger().log(Level.INFO, "no arg 'player', using sender by default"); 
+            //pluginInstance.getLogger().log(Level.INFO, "no arg 'player', using sender by default");
             executor = ctx.getSource().getExecutor(); 
         }
         String username = executor.getName(); 

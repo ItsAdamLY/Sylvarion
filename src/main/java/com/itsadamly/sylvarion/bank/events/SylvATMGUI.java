@@ -1,4 +1,4 @@
-package com.itsadamly.sylvarion.events.ATM;
+package com.itsadamly.sylvarion.bank.events;
 
 import com.itsadamly.sylvarion.databases.SylvDBDetails;
 import net.kyori.adventure.text.Component;

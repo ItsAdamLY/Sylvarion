@@ -1,4 +1,4 @@
-package com.itsadamly.sylvarion.events.ATM;
+package com.itsadamly.sylvarion.bank.events;
 
 import java.sql.Connection;
 import java.sql.SQLException;

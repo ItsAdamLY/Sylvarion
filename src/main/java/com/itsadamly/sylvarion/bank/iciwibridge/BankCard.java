@@ -1,4 +1,4 @@
-package com.itsadamly.sylvarion.iciwibridge;
+package com.itsadamly.sylvarion.bank.iciwibridge;
 import com.itsadamly.sylvarion.databases.bank.SylvBankDBTasks;
 import mikeshafter.iciwi.api.IcCard;
 import org.bukkit.inventory.ItemStack;

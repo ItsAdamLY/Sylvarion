@@ -1,4 +1,4 @@
-package com.itsadamly.sylvarion.events.ATM;
+package com.itsadamly.sylvarion.bank.events;
 
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
