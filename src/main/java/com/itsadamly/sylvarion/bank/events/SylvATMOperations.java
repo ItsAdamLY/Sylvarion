@@ -1,23 +1,21 @@
 package com.itsadamly.sylvarion.bank.events;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.Objects;
-import java.util.logging.Level;
-
+import com.itsadamly.sylvarion.Sylvarion;
+import com.itsadamly.sylvarion.databases.SylvDBDetails;
+import com.itsadamly.sylvarion.databases.bank.SylvBankCard;
+import com.itsadamly.sylvarion.databases.bank.SylvBankDBTasks;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import com.itsadamly.sylvarion.Sylvarion;
-import com.itsadamly.sylvarion.databases.SylvDBDetails;
-import com.itsadamly.sylvarion.databases.bank.SylvBankCard;
-import com.itsadamly.sylvarion.databases.bank.SylvBankDBTasks;
-
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.MiniMessage;
-import net.milkbowl.vault.economy.Economy;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.Objects;
+import java.util.logging.Level;
 
 public class SylvATMOperations {
     private static final Sylvarion pluginInstance = Sylvarion.getInstance();
@@ -151,17 +149,18 @@ public class SylvATMOperations {
     /**
      * Withdraw (remove) money from specified account (for command use)
      * @param commandSender - Command sender
-     * @param targetName - Command executor
+     * @param fromTargetName - Command executor
+     * @param toTargetName - Target to send the money to
      * @param amount - amount of money to withdraw
      * @return boolean - success or not
      * @throws SQLException if SQL error occurs
      */
-    public boolean withdraw(CommandSender commandSender, String targetName, double amount) throws SQLException {
+    public boolean withdraw(CommandSender commandSender, String fromTargetName, String toTargetName, double amount) throws SQLException {
         try {
-            boolean isUserExist = new SylvBankDBTasks(connection).isUserInDB(targetName);
+            boolean isUserExist = new SylvBankDBTasks(connection).isUserInDB(fromTargetName);
 
             if (!isUserExist) {
-                if (targetName.equalsIgnoreCase(commandSender.getName())) {
+                if (fromTargetName.equalsIgnoreCase(commandSender.getName())) {
                     commandSender.sendMessage(MM.deserialize("<red>You don't have any account."));
                 } else {
                     commandSender.sendMessage(MM.deserialize("<red>This player does not have any account."));
@@ -170,23 +169,23 @@ public class SylvATMOperations {
             }
 
             Economy economy = Sylvarion.getEconomy();
-            double balance = new SylvBankDBTasks(connection).getCardBalance(targetName);
+            double balance = new SylvBankDBTasks(connection).getCardBalance(fromTargetName);
 
             if (balance < amount) {
                 commandSender.sendMessage(MM.deserialize("<red>Insufficient money in the account."));
                 return false;
             }
 
-            economy.depositPlayer(Bukkit.getOfflinePlayer(targetName), amount);
-            new SylvBankDBTasks(connection).setCardBalance(targetName, "subtract", amount);
+            economy.depositPlayer(Bukkit.getOfflinePlayer(toTargetName), amount);
+            new SylvBankDBTasks(connection).setCardBalance(fromTargetName, "subtract", amount);
 
             Component message = MM.deserialize("<green>You have successfully withdrawn <gold>" +
                     CURRENCY + " " + String.format("%.2f", amount) + "</gold> from ");
 
-            if (commandSender.getName().equalsIgnoreCase(targetName)) {
+            if (commandSender.getName().equalsIgnoreCase(fromTargetName)) {
                 commandSender.sendMessage(message.append(MM.deserialize("your account.")));
             } else {
-                commandSender.sendMessage(message.append(MM.deserialize("<green>" + targetName + "</green>'s account.")));
+                commandSender.sendMessage(message.append(MM.deserialize("<green>" + fromTargetName + "</green>'s account.")));
             }
 
             return true;
@@ -196,29 +195,29 @@ public class SylvATMOperations {
         }
         return false;
     }
-
-    /**
-     * Gets username of player refered in command
-     * @param commandSender - sender instance
-     * @param args - <code>onCommand</code> command args
-     * @return {@link String} - the username
-     * @throws NullPointerException idk, go ask @ItsAdamLY
-     */
-    public String getUsername(CommandSender commandSender, String[] args) throws NullPointerException {
-        String username = null;
-
-        switch (args.length) {
-            case 1:
-                if (!(commandSender instanceof Player)) {
-                    commandSender.sendMessage(MM.deserialize("<red>Only players are allowed to run this command."));
-                    return null;
-                }
-                username = commandSender.getName();
-                break;
-            case 2:
-                username = args[1];
-                break;
-        }
-        return username;
-    }
+//
+//    /**
+//     * Gets username of player refered in command
+//     * @param commandSender - sender instance
+//     * @param args - <code>onCommand</code> command args
+//     * @return {@link String} - the username
+//     * @throws NullPointerException idk, go ask @ItsAdamLY
+//     */
+//    public String getUsername(CommandSender commandSender, String[] args) throws NullPointerException {
+//        String username = null;
+//
+//        switch (args.length) {
+//            case 1:
+//                if (!(commandSender instanceof Player)) {
+//                    commandSender.sendMessage(MM.deserialize("<red>Only players are allowed to run this command."));
+//                    return null;
+//                }
+//                username = commandSender.getName();
+//                break;
+//            case 2:
+//                username = args[1];
+//                break;
+//        }
+//        return username;
+//    }
 }
