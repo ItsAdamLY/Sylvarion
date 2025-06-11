@@ -14,6 +14,7 @@ import org.bukkit.block.Sign;
 import org.bukkit.block.sign.Side;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
@@ -27,7 +28,7 @@ import java.sql.SQLException;
 import java.time.Duration;
 import java.util.*;
 
-public class InteractATM extends SylvATMSigns
+public class InteractATM implements Listener
 {
     private static final Sylvarion pluginInstance = Sylvarion.getInstance();
     private static final MiniMessage MM = MiniMessage.miniMessage();
@@ -44,7 +45,8 @@ public class InteractATM extends SylvATMSigns
         {
             if (Objects.requireNonNull(event.getClickedBlock()).getState() instanceof Sign &&
                     ((Sign) event.getClickedBlock().getState()).getSide(Side.FRONT).line(0)
-                            .equals(MM.deserialize("[ATM]")))
+                            .equals(MM.deserialize("<green>[ATM]")) &&
+                    event.getClickedBlock().hasMetadata(pluginInstance + "_atm"))
             {
                 event.setCancelled(true);
                 atmUsers.putIfAbsent(event.getPlayer(), new SylvATM(event.getPlayer()));

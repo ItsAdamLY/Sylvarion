@@ -1,6 +1,7 @@
 package com.itsadamly.sylvarion;
 
 import com.itsadamly.sylvarion.bank.commands.SylvATMCommands;
+import com.itsadamly.sylvarion.bank.events.SylvATMSigns;
 import com.itsadamly.sylvarion.databases.SylvDBConnect;
 import com.itsadamly.sylvarion.bank.events.InteractATM;
 import com.itsadamly.sylvarion.bank.iciwibridge.BankCard;
@@ -30,8 +31,8 @@ public class Sylvarion extends JavaPlugin
             commands.registrar().register(SylvATMCommands.command);
         });
 
-        //getServer().getPluginManager().registerEvents(new SylvATMGUI(), this);
         getServer().getPluginManager().registerEvents(new InteractATM(), this);
+        getServer().getPluginManager().registerEvents(new SylvATMSigns(), this);
         getConfig().options().copyDefaults(true);
         saveDefaultConfig();
 
